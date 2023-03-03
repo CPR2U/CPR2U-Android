@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    namespace 'com.cpr2u.cpr2u_android'
+    namespace 'com.example.cpr2u_android'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.cpr2u.cpr2u_android"
-        minSdk 24
+        applicationId "com.example.cpr2u_android"
+        minSdk 26
         targetSdk 33
         versionCode 1
         versionName "1.0"

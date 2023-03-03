@@ -1,4 +1,4 @@
-package com.cpr2u.cpr2u_android
+package com.example.cpr2u_android
 
 import org.junit.Test
 

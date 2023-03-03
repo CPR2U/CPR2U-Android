@@ -1,4 +1,4 @@
-package com.cpr2u.cpr2u_android
+package com.example.cpr2u_android
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
