@@ -1,4 +1,4 @@
-package com.cpr2u.cpr2u_android
+package com.example.cpr2u_android
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.cpr2u.cpr2u_android", appContext.packageName)
+        assertEquals("com.example.cpr2u_android", appContext.packageName)
     }
 }
