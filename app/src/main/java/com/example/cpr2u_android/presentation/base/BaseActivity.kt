@@ -9,7 +9,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import com.example.cpr2u_android.util.closeKeyboard
 
-abstract class BindingActivity<T : ViewDataBinding>(
+abstract class BaseActivity<T : ViewDataBinding>(
     @LayoutRes private val layoutRes: Int,
 ) : AppCompatActivity() {
     protected lateinit var binding: T
