@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">CPR2U_Android</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="login_title">Enter your number</string>
+    <string name="login_subtitle">We will send a code to verify your mobile number</string>
+    <string name="login_country_code">+ 82</string>
+    <string name="login_hint">Phone Number*</string>
+    <string name="login_send">SEND</string>
+    <string name="login_check_title">Enter code</string>
+    <string name="login_check_subtitle">An SMS code was sent to</string>
+    <string name="login_check_country_code">+82</string>
+    <string name="login_check_not_receive">Not receiving the code?</string>
+    <string name="login_check_confirm">CONFIRM</string>
+    <string name="signup_title">Enter your Nickname</string>
+    <string name="signup_subtitle">People can recognize you by your nickname</string>
+    <string name="signup_hint">Nickname*</string>
+    <string name="signup_continue">CONTINUE</string>
 </resources>
