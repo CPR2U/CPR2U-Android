@@ -74,6 +74,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <EditText
+                android:id="@+id/et_number"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:background="@drawable/rectangle_border_gray_right_radius_6dp"
@@ -95,12 +96,12 @@
             android:layout_width="match_parent"
             android:layout_height="55dp"
             android:layout_marginHorizontal="26dp"
-            android:layout_marginBottom="50dp"
-            android:background="@drawable/rectangle_fill_red_radius_100dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/selector_sign_up_button"
             android:fontFamily="@font/notosans_bold"
             android:gravity="center"
             android:text="@string/login_send"
-            android:textColor="@color/white"
+            android:textColor="@color/selector_button_text"
             android:textSize="17sp"
             app:layout_constraintBottom_toBottomOf="parent" />
 
