@@ -171,7 +171,7 @@
 
 
         <TextView
-            android:id="@+id/button_first"
+            android:id="@+id/button_next"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:background="@color/main_light_red"

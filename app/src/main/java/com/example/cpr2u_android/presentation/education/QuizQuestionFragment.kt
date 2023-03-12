@@ -17,7 +17,7 @@ class QuizQuestionFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.buttonFirst.setOnClickListener {
+        binding.buttonNext.setOnClickListener {
             findNavController().navigate(R.id.action_QuizQuestionFragment_to_QuizAnswerFragment)
         }
     }
