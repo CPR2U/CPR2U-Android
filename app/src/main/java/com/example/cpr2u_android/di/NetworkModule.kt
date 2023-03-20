@@ -31,11 +31,7 @@ val netWorkModule = module {
     single<Retrofit> {
         Retrofit.Builder()
             .client(get())
-            .addConverterFactory(
-                GsonConverterFactory.create(
-                    GsonBuilder().setLenient().create(),
-                ),
-            )
+            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
             .baseUrl(BuildConfig.BASE_URL)
             .build()
     }
