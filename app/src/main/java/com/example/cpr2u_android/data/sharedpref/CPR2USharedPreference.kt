@@ -2,6 +2,7 @@ package com.example.cpr2u_android.data.sharedpref
 
 import android.content.Context
 import android.content.SharedPreferences
+import timber.log.Timber
 
 object CPR2USharedPreference {
     private const val ACCESS_TOKEN = "ACCESS_TOKEN"
@@ -11,6 +12,7 @@ object CPR2USharedPreference {
     private const val USER_NAME = "USER_NAME"
     lateinit var preferences: SharedPreferences
     fun init(context: Context) {
+        Timber.d("shared-preference-init")
         preferences = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE)
     }
 
@@ -28,6 +30,14 @@ object CPR2USharedPreference {
 
     fun setAccessToken(value: String) {
         preferences.edit().putString(ACCESS_TOKEN, value).apply()
+    }
+
+    fun getRefreshToken(): String {
+        return preferences.getString(REFRESH_TOKEN, "") ?: ""
+    }
+
+    fun setRefreshToken(value: String) {
+        preferences.edit().putString(REFRESH_TOKEN, value).apply()
     }
 
     fun getDeviceToken(): String {

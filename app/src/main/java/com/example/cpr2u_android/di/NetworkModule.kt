@@ -1,6 +1,7 @@
-package com.example.sobok_android.presentation.di
+package com.example.cpr2u_android.di
 
 import com.example.cpr2u_android.BuildConfig
+import com.example.cpr2u_android.data.api.AuthService
 import com.example.cpr2u_android.data.sharedpref.CPR2USharedPreference
 import com.google.gson.GsonBuilder
 import okhttp3.Interceptor
@@ -30,12 +31,11 @@ val netWorkModule = module {
     single<Retrofit> {
         Retrofit.Builder()
             .client(get())
-            .addConverterFactory(
-                GsonConverterFactory.create(
-                    GsonBuilder().setLenient().create(),
-                ),
-            )
+            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
             .baseUrl(BuildConfig.BASE_URL)
             .build()
+    }
+    single<AuthService> {
+        get<Retrofit>().create(AuthService::class.java)
     }
 }

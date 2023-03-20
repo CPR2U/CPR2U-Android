@@ -4,16 +4,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cpr2u_android.R
 import com.example.cpr2u_android.data.sharedpref.CPR2USharedPreference
 import com.example.cpr2u_android.presentation.MainActivity
 import com.example.cpr2u_android.presentation.auth.LoginActivity
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
 class SplashActivity : AppCompatActivity() {
-    private val splashViewModel: SplashViewModel by viewModels()
+    private val splashViewModel: SplashViewModel by viewModel()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initSplash()
@@ -45,10 +45,13 @@ class SplashActivity : AppCompatActivity() {
     private fun navigateToNext() {
         Timber.d("isLogin ${CPR2USharedPreference.getIsLogin()}")
 
-        val nextView = if (CPR2USharedPreference.getIsLogin()) { // 자동로그인 여부
-            MainActivity::class.java
-        } else {
+        val nextView = if (CPR2USharedPreference.getRefreshToken() == "") { // 자동로그인 여부
+            Timber.d("refresh 없음 : ${CPR2USharedPreference.getRefreshToken() == ""}")
             LoginActivity::class.java
+        } else {
+            splashViewModel.postAutoLogin(CPR2USharedPreference.getRefreshToken())
+            Timber.d("refresh 있음 : ${CPR2USharedPreference.getRefreshToken()}")
+            MainActivity::class.java
         }
         startActivity(Intent(this@SplashActivity, nextView))
         finish()
