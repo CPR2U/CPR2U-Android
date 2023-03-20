@@ -99,4 +99,16 @@ dependencies {
     //okHttp
     implementation "com.squareup.okhttp3:logging-interceptor:$okHttp_version"
     implementation "com.squareup.okhttp3:okhttp:$okHttp_version"
+
+    implementation "com.airbnb.android:lottie:3.6.1"
+
+    //Firebase SDK 추가
+    implementation platform('com.google.firebase:firebase-bom:29.1.0')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+
+    //Firebase Cloud Messaging(FCM)
+    implementation "com.google.firebase:firebase-messaging-ktx:23.0.6"
+
+    //Timber
+    implementation 'com.jakewharton.timber:timber:5.0.1'
 }
