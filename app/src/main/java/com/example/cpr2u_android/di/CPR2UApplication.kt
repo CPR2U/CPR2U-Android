@@ -1,4 +1,4 @@
-package com.example.sobok_android.presentation.di
+package com.example.cpr2u_android.di
 
 import android.app.Application
 import com.example.cpr2u_android.BuildConfig
