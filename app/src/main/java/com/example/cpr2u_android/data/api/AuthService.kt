@@ -1,6 +1,7 @@
 package com.example.cpr2u_android.data.api
 
 import com.example.cpr2u_android.data.model.request.auth.RequestLogin
+import com.example.cpr2u_android.data.model.request.auth.RequestSignUp
 import com.example.cpr2u_android.data.model.response.auth.GeneralResponse
 import com.example.cpr2u_android.data.model.response.auth.ResponseAutoLogin
 import com.example.cpr2u_android.data.model.response.auth.ResponseLogin
@@ -31,4 +32,9 @@ interface AuthService {
     suspend fun getNickname(
         @Query("nickname") nickName: String,
     ): GeneralResponse
+
+    @POST("auth/signup")
+    suspend fun postSignUp(
+        @Body body: RequestSignUp,
+    ): ResponseAutoLogin
 }

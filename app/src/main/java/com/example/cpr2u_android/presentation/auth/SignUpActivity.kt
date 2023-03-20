@@ -15,10 +15,12 @@ import java.util.regex.Pattern
 class SignUpActivity : BaseActivity<ActivitySignUpBinding>(R.layout.activity_sign_up) {
     private val authViewModel: AuthViewModel by viewModel()
     private var isValidNickname: Boolean = false
+    private var isSuccess: Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initTextChangeEvent()
         observeIsValidNickname()
+        observeSignUpSuccess()
         initConfirmClickListener()
     }
 
@@ -27,7 +29,8 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding>(R.layout.activity_sig
             if (binding.isError == false) {
                 authViewModel.getNickname(binding.etNickname.text.toString())
                 if (isValidNickname) {
-                    navigateToNext()
+                    authViewModel.postSignUp()
+                    if (isSuccess) navigateToNext()
                 } else {
                     Timber.d("is valid -> false")
                     Toast.makeText(
@@ -51,6 +54,12 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding>(R.layout.activity_sig
     private fun observeIsValidNickname() {
         authViewModel.isValidNickname.observe(this) {
             isValidNickname = it
+        }
+    }
+
+    private fun observeSignUpSuccess() {
+        authViewModel.isSuccess.observe(this) {
+            isSuccess = it
         }
     }
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cpr2u_android.data.model.request.auth.RequestLogin
+import com.example.cpr2u_android.data.model.request.auth.RequestSignUp
 import com.example.cpr2u_android.data.sharedpref.CPR2USharedPreference
 import com.example.cpr2u_android.domain.repository.auth.AuthRepository
 import kotlinx.coroutines.launch
@@ -15,6 +16,10 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     val phoneNumber: String
         get() = _phoneNumber
 
+    private var _nickname: String = ""
+    val nickname: String
+        get() = _nickname
+
     private val _validationCode = MutableLiveData<String>()
     var validationCode: LiveData<String> = _validationCode
 
@@ -23,6 +28,9 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     private val _isValidNickname = MutableLiveData<Boolean>()
     var isValidNickname: LiveData<Boolean> = _isValidNickname
+
+    private val _isSuccess = MutableLiveData<Boolean>()
+    var isSuccess: LiveData<Boolean> = _isSuccess
 
     fun setPhoneNumber(phoneNumber: String) {
         _phoneNumber = phoneNumber
@@ -63,6 +71,25 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }.onFailure {
             Timber.d("사용 불가능한 닉네임")
             setIsValidNickname(false)
+        }
+    }
+
+    fun postSignUp() = viewModelScope.launch {
+        kotlin.runCatching {
+            authRepository.postSignUp(
+                RequestSignUp(
+                    deviceToken = CPR2USharedPreference.getDeviceToken(),
+                    phoneNumber = _phoneNumber,
+                    nickname = _nickname,
+                ),
+            )
+        }.onSuccess {
+            _isSuccess.value = true
+            CPR2USharedPreference.setAccessToken(it.data.accessToken)
+            CPR2USharedPreference.setRefreshToken(it.data.refreshToken)
+        }.onFailure {
+            Timber.e("post-sign-up-fail -> $it")
+            _isSuccess.value = false
         }
     }
 

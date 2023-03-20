@@ -2,6 +2,7 @@ package com.example.cpr2u_android.data.datasource.auth
 
 import com.example.cpr2u_android.data.api.AuthService
 import com.example.cpr2u_android.data.model.request.auth.RequestLogin
+import com.example.cpr2u_android.data.model.request.auth.RequestSignUp
 import com.example.cpr2u_android.data.model.response.auth.GeneralResponse
 import com.example.cpr2u_android.data.model.response.auth.ResponseAutoLogin
 import com.example.cpr2u_android.data.model.response.auth.ResponseLogin
@@ -22,5 +23,9 @@ class AuthRemoteDataSource(private val authService: AuthService) : AuthDataSourc
 
     override suspend fun getNickName(nickname: String): GeneralResponse {
         return authService.getNickname(nickname)
+    }
+
+    override suspend fun postSignUp(signUpData: RequestSignUp): ResponseAutoLogin {
+        return authService.postSignUp(signUpData)
     }
 }
