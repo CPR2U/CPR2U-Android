@@ -1,4 +1,4 @@
-package com.example.cpr2u_android.data
+package com.example.cpr2u_android.data.sharedpref
 
 import android.content.Context
 import android.content.SharedPreferences
