@@ -2,25 +2,64 @@ package com.example.cpr2u_android.presentation.auth
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import com.example.cpr2u_android.R
 import com.example.cpr2u_android.databinding.ActivitySignUpBinding
 import com.example.cpr2u_android.presentation.MainActivity
 import com.example.cpr2u_android.presentation.base.BaseActivity
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import timber.log.Timber
 import java.util.regex.Pattern
 
 class SignUpActivity : BaseActivity<ActivitySignUpBinding>(R.layout.activity_sign_up) {
+    private val authViewModel: AuthViewModel by viewModel()
+    private var isValidNickname: Boolean = false
+    private var isSuccess: Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initTextChangeEvent()
+        observeIsValidNickname()
+        observeSignUpSuccess()
+        initConfirmClickListener()
+    }
 
+    private fun initConfirmClickListener() {
         binding.tvConfirm.setOnClickListener {
             if (binding.isError == false) {
-                startActivity(Intent(this@SignUpActivity, MainActivity::class.java))
+                authViewModel.getNickname(binding.etNickname.text.toString())
+                if (isValidNickname) {
+                    authViewModel.postSignUp()
+                    if (isSuccess) navigateToNext()
+                } else {
+                    Timber.d("is valid -> false")
+                    Toast.makeText(
+                        this,
+                        "중복된 닉네임입니다. 다른 닉네임을 입력해주세요.",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
             } else if (binding.etNickname.text.isEmpty()) {
                 binding.isError = true
                 binding.tvErrorMessage.text = getString(R.string.signup_set_nickname)
             }
+        }
+    }
+
+    private fun navigateToNext() {
+        startActivity(Intent(this@SignUpActivity, MainActivity::class.java))
+        finish()
+    }
+
+    private fun observeIsValidNickname() {
+        authViewModel.isValidNickname.observe(this) {
+            isValidNickname = it
+        }
+    }
+
+    private fun observeSignUpSuccess() {
+        authViewModel.isSuccess.observe(this) {
+            isSuccess = it
         }
     }
 
