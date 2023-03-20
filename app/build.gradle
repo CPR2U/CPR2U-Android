@@ -107,8 +107,13 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics-ktx'
 
     //Firebase Cloud Messaging(FCM)
-    implementation "com.google.firebase:firebase-messaging-ktx:23.0.6"
+    implementation "com.google.firebase:firebase-messaging-ktx:23.1.2"
 
     //Timber
     implementation 'com.jakewharton.timber:timber:5.0.1'
+
+    // koin
+    implementation "io.insert-koin:koin-androidx-scope:$koin_version"
+    implementation "io.insert-koin:koin-androidx-viewmodel:$koin_version"
+    testImplementation "io.insert-koin:koin-test:$koin_version"
 }

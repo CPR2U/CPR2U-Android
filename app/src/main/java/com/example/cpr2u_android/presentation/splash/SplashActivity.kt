@@ -7,7 +7,7 @@ import android.os.Looper
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.cpr2u_android.R
-import com.example.cpr2u_android.data.CPR2USharedPreference
+import com.example.cpr2u_android.data.sharedpref.CPR2USharedPreference
 import com.example.cpr2u_android.presentation.MainActivity
 import com.example.cpr2u_android.presentation.auth.LoginActivity
 import timber.log.Timber
