@@ -18,7 +18,7 @@ import timber.log.Timber
 
 class LoginPhoneNumberCheckFragment :
     BaseFragment<FragmentLoginPhoneNumberCheckBinding>(R.layout.fragment_login_phone_number_check) {
-    private val signInViewModel: SignInViewModel by sharedViewModel()
+    private val signInViewModel: AuthViewModel by sharedViewModel()
     private lateinit var smsCode: List<EditText>
     var smsCodeStr: String = ""
 
@@ -56,21 +56,27 @@ class LoginPhoneNumberCheckFragment :
                         ),
                     )
                     signInViewModel.isUser.observe(viewLifecycleOwner) {
-                        val nextView = if (it) {
-                            MainActivity::class.java
-                        } else {
-                            SignUpActivity::class.java
-                        }
-                        val intent =
-                            Intent(requireContext(), nextView)
-                        startActivity(intent)
-                        requireActivity().finishAffinity()
+                        navigateToNext(it)
                     }
                 } else {
                     Timber.d("코드 다름")
                 }
             }
         }
+    }
+
+    private fun navigateToNext(it: Boolean) {
+        val nextView = if (it) {
+            Timber.d("it -> true")
+            MainActivity::class.java
+        } else {
+            Timber.d("it -> false")
+            SignUpActivity::class.java
+        }
+        val intent =
+            Intent(requireContext(), nextView)
+        startActivity(intent)
+        requireActivity().finishAffinity()
     }
 
     private fun initSmsCodeEvent() {

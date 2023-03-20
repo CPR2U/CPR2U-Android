@@ -2,6 +2,7 @@ package com.example.cpr2u_android.data.repository.auth
 
 import com.example.cpr2u_android.data.datasource.auth.AuthDataSource
 import com.example.cpr2u_android.data.model.request.auth.RequestLogin
+import com.example.cpr2u_android.data.model.response.auth.GeneralResponse
 import com.example.cpr2u_android.data.model.response.auth.ResponseAutoLogin
 import com.example.cpr2u_android.data.model.response.auth.ResponseLogin
 import com.example.cpr2u_android.data.model.response.auth.ResponsePhoneVerification
@@ -29,5 +30,9 @@ class AuthRepositoryImpl(private val authDataSource: AuthDataSource) : AuthRepos
 
     override suspend fun postLogin(loginData: RequestLogin): ResponseLogin {
         return authDataSource.postLogin(loginData)
+    }
+
+    override suspend fun getNickname(nickname: String): GeneralResponse {
+        return authDataSource.getNickName(nickname)
     }
 }

@@ -12,7 +12,7 @@ import timber.log.Timber
 
 class LoginPhoneNumberFragment :
     BaseFragment<FragmentLoginPhoneNumberBinding>(R.layout.fragment_login_phone_number) {
-    private val signInViewModel: SignInViewModel by sharedViewModel()
+    private val signInViewModel: AuthViewModel by sharedViewModel()
     private var bundle = Bundle()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

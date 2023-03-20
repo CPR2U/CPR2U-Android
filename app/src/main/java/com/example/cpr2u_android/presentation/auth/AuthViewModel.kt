@@ -10,16 +10,19 @@ import com.example.cpr2u_android.domain.repository.auth.AuthRepository
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class SignInViewModel(private val authRepository: AuthRepository) : ViewModel() {
+class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     private var _phoneNumber: String = ""
     val phoneNumber: String
         get() = _phoneNumber
 
-    private val _validationCode = MutableLiveData<String>("")
+    private val _validationCode = MutableLiveData<String>()
     var validationCode: LiveData<String> = _validationCode
 
-    private val _isUser = MutableLiveData<Boolean>(false)
+    private val _isUser = MutableLiveData<Boolean>()
     var isUser: LiveData<Boolean> = _isUser
+
+    private val _isValidNickname = MutableLiveData<Boolean>()
+    var isValidNickname: LiveData<Boolean> = _isValidNickname
 
     fun setPhoneNumber(phoneNumber: String) {
         _phoneNumber = phoneNumber
@@ -49,6 +52,23 @@ class SignInViewModel(private val authRepository: AuthRepository) : ViewModel() 
             Timber.d("인증되지 않은 사용자. 회원가입 필요")
             _isUser.value = false
         }
+    }
+
+    fun getNickname(nickname: String) = viewModelScope.launch {
+        kotlin.runCatching {
+            authRepository.getNickname(nickname)
+        }.onSuccess {
+            Timber.d("사용 가능한 닉네임")
+            setIsValidNickname(true)
+        }.onFailure {
+            Timber.d("사용 불가능한 닉네임")
+            setIsValidNickname(false)
+        }
+    }
+
+    private fun setIsValidNickname(isValid: Boolean) {
+        Timber.d("set value")
+        _isValidNickname.value = isValid
     }
 
     fun getValidationCode(): String? {
