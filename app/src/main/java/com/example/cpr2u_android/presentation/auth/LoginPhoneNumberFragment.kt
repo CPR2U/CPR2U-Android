@@ -7,12 +7,12 @@ import androidx.navigation.fragment.findNavController
 import com.example.cpr2u_android.R
 import com.example.cpr2u_android.databinding.FragmentLoginPhoneNumberBinding
 import com.example.cpr2u_android.presentation.base.BaseFragment
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import timber.log.Timber
 
 class LoginPhoneNumberFragment :
     BaseFragment<FragmentLoginPhoneNumberBinding>(R.layout.fragment_login_phone_number) {
-    private val signInViewModel: SignInViewModel by viewModel()
+    private val signInViewModel: SignInViewModel by sharedViewModel()
     private var bundle = Bundle()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

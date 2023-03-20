@@ -7,14 +7,18 @@ import android.view.View.OnFocusChangeListener
 import android.widget.EditText
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
-import androidx.fragment.app.activityViewModels
 import com.example.cpr2u_android.R
+import com.example.cpr2u_android.data.model.request.auth.RequestLogin
+import com.example.cpr2u_android.data.sharedpref.CPR2USharedPreference
 import com.example.cpr2u_android.databinding.FragmentLoginPhoneNumberCheckBinding
+import com.example.cpr2u_android.presentation.MainActivity
 import com.example.cpr2u_android.presentation.base.BaseFragment
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import timber.log.Timber
 
 class LoginPhoneNumberCheckFragment :
     BaseFragment<FragmentLoginPhoneNumberCheckBinding>(R.layout.fragment_login_phone_number_check) {
-    private val signInViewModel: SignInViewModel by activityViewModels()
+    private val signInViewModel: SignInViewModel by sharedViewModel()
     private lateinit var smsCode: List<EditText>
     var smsCodeStr: String = ""
 
@@ -42,10 +46,29 @@ class LoginPhoneNumberCheckFragment :
             if (smsCodeStr.length < 4) {
                 Toast.makeText(requireContext(), "코드를 모두 입력해주세요", Toast.LENGTH_SHORT).show()
             } else {
-                val intent =
-                    Intent(requireContext(), SignUpActivity::class.java)
-                startActivity(intent)
-                requireActivity().finishAffinity()
+                Timber.d("smscode -> $smsCodeStr")
+                Timber.d("view model code -> ${signInViewModel.validationCode.value}")
+                if (smsCodeStr == signInViewModel.validationCode.value) {
+                    signInViewModel.postLogin(
+                        RequestLogin(
+                            CPR2USharedPreference.getDeviceToken(),
+                            smsCodeStr,
+                        ),
+                    )
+                    signInViewModel.isUser.observe(viewLifecycleOwner) {
+                        val nextView = if (it) {
+                            MainActivity::class.java
+                        } else {
+                            SignUpActivity::class.java
+                        }
+                        val intent =
+                            Intent(requireContext(), nextView)
+                        startActivity(intent)
+                        requireActivity().finishAffinity()
+                    }
+                } else {
+                    Timber.d("코드 다름")
+                }
             }
         }
     }
