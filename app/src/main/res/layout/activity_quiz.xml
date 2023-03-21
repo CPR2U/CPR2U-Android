@@ -40,7 +40,9 @@
                 app:layout_constraintTop_toBottomOf="@id/tv_education_title" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <include layout="@layout/content_quiz" />
+        <include
+            android:id="@+id/include"
+            layout="@layout/content_quiz" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
