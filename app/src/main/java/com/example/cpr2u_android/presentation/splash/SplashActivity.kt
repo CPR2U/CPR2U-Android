@@ -44,17 +44,19 @@ class SplashActivity : AppCompatActivity() {
 
     private fun navigateToNext() {
         Timber.d("isLogin ${CPR2USharedPreference.getIsLogin()}")
-
-        val nextView = if (CPR2USharedPreference.getRefreshToken() == "") { // 자동로그인 여부
-            Timber.d("refresh 없음 : ${CPR2USharedPreference.getRefreshToken() == ""}")
-            LoginActivity::class.java
-        } else {
-            splashViewModel.postAutoLogin(CPR2USharedPreference.getRefreshToken())
-            Timber.d("refresh 있음 : ${CPR2USharedPreference.getRefreshToken()}")
-            MainActivity::class.java
+        splashViewModel.postAutoLogin(CPR2USharedPreference.getRefreshToken())
+        splashViewModel.autoLogin.observe(this) {
+            if (it) {
+                Timber.d("activity -> 자동로그인 성공")
+                LoginActivity::class.java
+                startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                finish()
+            } else {
+                Timber.d("activity -> 자동로그인 실패")
+                startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
+                finish()
+            }
         }
-        startActivity(Intent(this@SplashActivity, nextView))
-        finish()
     }
 
     companion object {

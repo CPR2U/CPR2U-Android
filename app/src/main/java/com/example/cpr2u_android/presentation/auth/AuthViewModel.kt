@@ -33,6 +33,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     var isSuccess: LiveData<Boolean> = _isSuccess
 
     fun setPhoneNumber(phoneNumber: String) {
+        Timber.d("### set phone number -> $phoneNumber")
         _phoneNumber = phoneNumber
     }
 
@@ -74,16 +75,20 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
-    fun postSignUp() = viewModelScope.launch {
+    fun postSignUp(nickname: String, phoneNumber: String) = viewModelScope.launch {
         kotlin.runCatching {
+            Timber.d("CPR2USharedPreference.getDeviceToken() -> ${CPR2USharedPreference.getDeviceToken()}")
+            Timber.d("phonenumber -> $phoneNumber")
+            Timber.d("nickname -> $nickname")
             authRepository.postSignUp(
                 RequestSignUp(
                     deviceToken = CPR2USharedPreference.getDeviceToken(),
-                    phoneNumber = _phoneNumber,
-                    nickname = _nickname,
+                    phoneNumber = phoneNumber,
+                    nickname = nickname,
                 ),
             )
         }.onSuccess {
+            Timber.e("post-sign-up-success -> $it")
             _isSuccess.value = true
             CPR2USharedPreference.setAccessToken(it.data.accessToken)
             CPR2USharedPreference.setRefreshToken(it.data.refreshToken)
@@ -92,7 +97,6 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
             _isSuccess.value = false
         }
     }
-
     private fun setIsValidNickname(isValid: Boolean) {
         Timber.d("set value")
         _isValidNickname.value = isValid
