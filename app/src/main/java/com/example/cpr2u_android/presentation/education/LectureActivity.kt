@@ -8,13 +8,20 @@ import android.view.LayoutInflater
 import android.view.WindowManager
 import android.webkit.WebViewClient
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.example.cpr2u_android.R
 import com.example.cpr2u_android.databinding.ActivityLectureBinding
 import com.example.cpr2u_android.databinding.DialogQuizBinding
 import com.example.cpr2u_android.presentation.base.BaseActivity
+import com.example.cpr2u_android.util.UiState
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
 class LectureActivity : BaseActivity<ActivityLectureBinding>(R.layout.activity_lecture) {
+    private val educationViewModel: EducationViewModel by viewModel()
     private var start: Long = 0
     private var end: Long = 0
     private var sum: Long = 0
@@ -34,8 +41,17 @@ class LectureActivity : BaseActivity<ActivityLectureBinding>(R.layout.activity_l
                 false,
             )
             binding.buttonFinish.setOnClickListener {
-                dialog.dismiss()
-                finish()
+                educationViewModel.postLectureId()
+                educationViewModel.testUIState.flowWithLifecycle(lifecycle).onEach {
+                    when (it) {
+                        is UiState.Success -> {
+                            Timber.d("success")
+                            dialog.dismiss()
+                            finish()
+                        }
+                        else -> {}
+                    }
+                }.launchIn(lifecycleScope)
             }
             dialog.setContentView(binding.root)
             dialog.window?.setLayout(
