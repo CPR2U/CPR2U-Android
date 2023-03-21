@@ -21,6 +21,7 @@ class LoginPhoneNumberCheckFragment :
     private val signInViewModel: AuthViewModel by sharedViewModel()
     private lateinit var smsCode: List<EditText>
     var smsCodeStr: String = ""
+    var phoneNumber: String = ""
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -33,7 +34,7 @@ class LoginPhoneNumberCheckFragment :
     }
 
     private fun initPhoneNumber() {
-        val phoneNumber = arguments?.getString("phoneNumber").toString()
+        phoneNumber = arguments?.getString("phoneNumber").toString()
         binding.phoneNumber = phoneNumber
     }
 
@@ -75,6 +76,7 @@ class LoginPhoneNumberCheckFragment :
         }
         val intent =
             Intent(requireContext(), nextView)
+        intent.putExtra("phoneNumber", phoneNumber)
         startActivity(intent)
         requireActivity().finishAffinity()
     }

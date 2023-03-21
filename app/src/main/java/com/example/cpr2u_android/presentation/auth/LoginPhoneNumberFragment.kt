@@ -31,6 +31,8 @@ class LoginPhoneNumberFragment :
         binding.tvSend.setOnClickListener {
             if (binding.tvSend.isSelected) {
                 val phoneNumber = binding.etNumber.text.toString()
+                Timber.d("### set phone number fragment -> ${phoneNumber}")
+                signInViewModel.setPhoneNumber(phoneNumber)
                 signInViewModel.postVerification(phoneNumber)
                 signInViewModel.validationCode.observe(viewLifecycleOwner) {
                     Timber.d("signIn ViewModel V C -> ${signInViewModel.getValidationCode()}")
