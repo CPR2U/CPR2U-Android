@@ -2,6 +2,7 @@ package com.example.cpr2u_android.di
 
 import com.example.cpr2u_android.BuildConfig
 import com.example.cpr2u_android.data.api.AuthService
+import com.example.cpr2u_android.data.api.EducationService
 import com.example.cpr2u_android.data.sharedpref.CPR2USharedPreference
 import com.google.gson.GsonBuilder
 import okhttp3.Interceptor
@@ -38,4 +39,5 @@ val netWorkModule = module {
     single<AuthService> {
         get<Retrofit>().create(AuthService::class.java)
     }
+    single<EducationService> { get<Retrofit>().create(EducationService::class.java) }
 }
