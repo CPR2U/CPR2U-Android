@@ -16,8 +16,11 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding>(R.layout.activity_sig
     private val authViewModel: AuthViewModel by viewModel()
     private var isValidNickname: Boolean = false
     private var isSuccess: Boolean = false
+    private var phoneNumber: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        phoneNumber = intent.getStringExtra("phoneNumber").toString()
         initTextChangeEvent()
         observeIsValidNickname()
         observeSignUpSuccess()
@@ -29,7 +32,10 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding>(R.layout.activity_sig
             if (binding.isError == false) {
                 authViewModel.getNickname(binding.etNickname.text.toString())
                 if (isValidNickname) {
-                    authViewModel.postSignUp()
+                    authViewModel.postSignUp(
+                        nickname = binding.etNickname.text.toString(),
+                        phoneNumber = phoneNumber,
+                    )
                     if (isSuccess) navigateToNext()
                 } else {
                     Timber.d("is valid -> false")
