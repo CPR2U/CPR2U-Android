@@ -14,5 +14,9 @@ class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragme
         binding.clLecture.setOnClickListener {
             startActivity(Intent(requireContext(), LectureActivity::class.java))
         }
+
+        binding.clQuiz.setOnClickListener {
+            startActivity(Intent(requireContext(), QuizActivity::class.java))
+        }
     }
 }
