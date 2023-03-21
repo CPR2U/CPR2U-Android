@@ -12,16 +12,7 @@ import timber.log.Timber
 
 class AuthRepositoryImpl(private val authDataSource: AuthDataSource) : AuthRepository {
     override suspend fun postAuthLogin(refreshToken: String): ResponseAutoLogin? {
-        var result: ResponseAutoLogin? = null
-        runCatching {
-            authDataSource.postAutoLogin(refreshToken)
-        }.onSuccess {
-            Timber.d("RepositoryImpl : post-auto-login-server-success : $it")
-            result = it
-        }.onFailure {
-            Timber.e("RepositoryImpl : post-auto-login-server-fail : $it")
-        }
-        return result
+        return authDataSource.postAutoLogin(refreshToken)
     }
 
     override suspend fun postVerification(phoneNumber: String): ResponsePhoneVerification {
