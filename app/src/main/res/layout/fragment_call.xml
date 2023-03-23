@@ -11,11 +11,10 @@
         android:layout_height="match_parent"
         tools:context=".presentation.call.CallFragment">
 
-        <!-- TODO: Update blank fragment layout -->
-        <TextView
+        <com.google.android.gms.maps.MapView
+            android:id="@+id/mapFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="call" />
+            android:layout_height="match_parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
