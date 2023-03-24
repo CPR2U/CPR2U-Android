@@ -1,48 +1,89 @@
 package com.example.cpr2u_android.presentation.call
 
 import android.Manifest
+import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.ProgressBar
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.example.cpr2u_android.R
+import com.example.cpr2u_android.databinding.FragmentCallBinding
+import com.example.cpr2u_android.presentation.auth.LoginActivity
+import com.example.cpr2u_android.presentation.education.LectureActivity
+import com.example.cpr2u_android.presentation.education.QuizActivity
 import com.google.android.gms.location.LocationListener
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 
 class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
+    private lateinit var binding: FragmentCallBinding
     private lateinit var map: GoogleMap
+    private lateinit var handler: Handler
+    private lateinit var objectAnimator: ObjectAnimator
     private val locationPermissionCode = 100
     lateinit var mapFragment: MapView
 
     private lateinit var mMap: GoogleMap
     private lateinit var mLocationManager: LocationManager
     private lateinit var mMarker: Marker
+    private lateinit var progressBell: ProgressBar
+
+    private var longClickHandler = Handler()
+    private var longClickRunnable = Runnable {
+        progressBell.visibility = View.GONE
+        startActivity(Intent(requireContext(), CallingActivity::class.java))
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
+        binding = FragmentCallBinding.inflate(layoutInflater, container, false)
         val view: View = inflater.inflate(R.layout.fragment_call, container, false)
+
+        MapsInitializer.initialize(requireContext(), MapsInitializer.Renderer.LATEST) {
+            // println(it.name)
+        }
         mapFragment = view.findViewById<MapView>(R.id.mapFragment)
         mapFragment.onCreate(savedInstanceState)
         mapFragment.getMapAsync(this)
-        return view
-    }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        val bell = view.findViewById<ImageView>(R.id.iv_bell)
+        progressBell = view.findViewById<ProgressBar>(R.id.progress_bar_bell)
+        progressBell.visibility = View.GONE
+
+        bell.setOnTouchListener { _, event ->
+
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    progressBell.visibility = View.VISIBLE
+                    longClickHandler.postDelayed(longClickRunnable, 3000)
+                }
+                MotionEvent.ACTION_UP -> {
+                    progressBell.visibility = View.GONE
+                    longClickHandler.removeCallbacks(longClickRunnable)
+                }
+            }
+            true
+        }
+
+        return view
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -72,7 +113,6 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
         mMap.uiSettings.isMyLocationButtonEnabled = true
         mMap.uiSettings.isZoomControlsEnabled = true
 
-        // Get the user's current location and mark it on the map
         mLocationManager =
             requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if (ActivityCompat.checkSelfPermission(
@@ -106,6 +146,11 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
     override fun onDestroy() {
         super.onDestroy()
         mapFragment
+        longClickHandler.removeCallbacks(longClickRunnable)
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
     }
 
     override fun onLocationChanged(location: Location) {
@@ -132,5 +177,10 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
 
         // Stop updating the user's location to save battery
 //        mLocationManager.removeUpdates(this)
+    }
+
+    companion object {
+        /** Long Press 판단 기준 시간 */
+        private const val LONG_PRESSED_TIME = 2L
     }
 }
