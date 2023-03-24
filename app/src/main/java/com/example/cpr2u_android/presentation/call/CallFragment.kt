@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
@@ -14,15 +15,14 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.ProgressBar
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.example.cpr2u_android.R
 import com.example.cpr2u_android.databinding.FragmentCallBinding
-import com.example.cpr2u_android.presentation.auth.LoginActivity
-import com.example.cpr2u_android.presentation.education.LectureActivity
-import com.example.cpr2u_android.presentation.education.QuizActivity
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
@@ -68,21 +68,26 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
         progressBell = view.findViewById<ProgressBar>(R.id.progress_bar_bell)
         progressBell.visibility = View.GONE
 
-        bell.setOnTouchListener { _, event ->
+        val fadeIn = view.findViewById<View>(R.id.fade_in)
+        val fadeInAnim: Animation = AnimationUtils.loadAnimation(context, R.anim.fade_in)
 
+        bell.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     progressBell.visibility = View.VISIBLE
+                    fadeIn.startAnimation(fadeInAnim)
+                    fadeIn.setBackgroundColor(Color.RED)
                     longClickHandler.postDelayed(longClickRunnable, 3000)
                 }
                 MotionEvent.ACTION_UP -> {
                     progressBell.visibility = View.GONE
+                    fadeIn.visibility = View.INVISIBLE
+                    fadeIn.clearAnimation()
                     longClickHandler.removeCallbacks(longClickRunnable)
                 }
             }
             true
         }
-
         return view
     }
 
