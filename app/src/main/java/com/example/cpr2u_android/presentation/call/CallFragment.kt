@@ -1,7 +1,6 @@
 package com.example.cpr2u_android.presentation.call
 
 import android.Manifest
-import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -10,7 +9,7 @@ import android.graphics.Color
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
-import android.os.Handler
+import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -19,6 +18,7 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.example.cpr2u_android.R
@@ -28,12 +28,10 @@ import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import java.util.*
 
 class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
     private lateinit var binding: FragmentCallBinding
-    private lateinit var map: GoogleMap
-    private lateinit var handler: Handler
-    private lateinit var objectAnimator: ObjectAnimator
     private val locationPermissionCode = 100
     lateinit var mapFragment: MapView
 
@@ -41,12 +39,12 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
     private lateinit var mLocationManager: LocationManager
     private lateinit var mMarker: Marker
     private lateinit var progressBell: ProgressBar
-
-    private var longClickHandler = Handler()
-    private var longClickRunnable = Runnable {
-        progressBell.visibility = View.GONE
-        startActivity(Intent(requireContext(), CallingActivity::class.java))
-    }
+    private lateinit var fadeIn: View
+    private lateinit var fadeInAnim: Animation
+    private lateinit var fadeInText: TextView
+    private var timerStarted = false
+    private var timeLeftInMillis = 0L
+    private lateinit var countDownTimer: CountDownTimer
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
@@ -68,22 +66,27 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
         progressBell = view.findViewById<ProgressBar>(R.id.progress_bar_bell)
         progressBell.visibility = View.GONE
 
-        val fadeIn = view.findViewById<View>(R.id.fade_in)
-        val fadeInAnim: Animation = AnimationUtils.loadAnimation(context, R.anim.fade_in)
+        fadeIn = view.findViewById<View>(R.id.fade_in)
+        fadeInAnim = AnimationUtils.loadAnimation(context, R.anim.fade_in)
+        fadeInText = view.findViewById<TextView>(R.id.tv_fade_in)
+        fadeIn.visibility = View.INVISIBLE
+        progressBell.visibility = View.INVISIBLE
+        fadeInText.visibility = View.INVISIBLE
 
         bell.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    progressBell.visibility = View.VISIBLE
                     fadeIn.startAnimation(fadeInAnim)
-                    fadeIn.setBackgroundColor(Color.RED)
-                    longClickHandler.postDelayed(longClickRunnable, 3000)
+                    fadeIn.setBackgroundColor(Color.parseColor("#42FF2F2F"))
+                    startTimer()
                 }
+
                 MotionEvent.ACTION_UP -> {
-                    progressBell.visibility = View.GONE
                     fadeIn.visibility = View.INVISIBLE
+                    progressBell.visibility = View.INVISIBLE
+                    fadeInText.visibility = View.INVISIBLE
                     fadeIn.clearAnimation()
-                    longClickHandler.removeCallbacks(longClickRunnable)
+                    resetTimer()
                 }
             }
             true
@@ -133,6 +136,39 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
 //        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this)
     }
 
+    private fun startTimer() {
+        if (!timerStarted) {
+            countDownTimer = object : CountDownTimer(4000, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    fadeIn.visibility = View.VISIBLE
+                    progressBell.visibility = View.VISIBLE
+                    fadeInText.visibility = View.VISIBLE
+                    timeLeftInMillis = millisUntilFinished
+                    val secondsLeft = timeLeftInMillis / 1000
+                    fadeInText.text = secondsLeft.toString()
+                }
+
+                override fun onFinish() {
+                    fadeIn.visibility = View.INVISIBLE
+                    progressBell.visibility = View.INVISIBLE
+                    fadeInText.visibility = View.INVISIBLE
+                    startActivity(Intent(requireContext(), CallingActivity::class.java))
+                }
+            }.start()
+
+            timerStarted = true
+        }
+    }
+
+    private fun resetTimer() {
+        if (timerStarted) {
+            countDownTimer.cancel()
+            timerStarted = false
+            timeLeftInMillis = 0L
+            fadeInText.text = "0"
+        }
+    }
+
     override fun onStart() {
         super.onStart()
         mapFragment.onStart()
@@ -141,6 +177,7 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
     override fun onStop() {
         super.onStop()
         mapFragment.onStop()
+        resetTimer()
     }
 
     override fun onResume() {
@@ -151,7 +188,6 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
     override fun onDestroy() {
         super.onDestroy()
         mapFragment
-        longClickHandler.removeCallbacks(longClickRunnable)
     }
 
     override fun onLowMemory() {

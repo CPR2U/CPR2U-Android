@@ -21,12 +21,24 @@
             <com.google.android.gms.maps.MapView
                 android:id="@+id/mapFragment"
                 android:layout_width="match_parent"
-                android:layout_height="400dp" />
+                android:layout_height="match_parent" />
 
             <View
                 android:id="@+id/fade_in"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent" />
+
+            <com.example.cpr2u_android.util.OutLineTextView
+                android:id="@+id/tv_fade_in"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fontFamily="@font/notosans_bold"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="@color/main_red"
+                android:textSize="40sp"
+                app:textStrokeColor="#B50000"
+                app:textStrokeWidth="10" />
         </RelativeLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -76,7 +88,6 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <ProgressBar
-            android:visibility="gone"
             android:id="@+id/progress_bar_bell"
             style="@android:style/Widget.ProgressBar"
             android:layout_width="0dp"
@@ -85,6 +96,7 @@
             android:indeterminate="false"
             android:max="500"
             android:progressDrawable="@drawable/progress_bell"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/iv_bell"
             app:layout_constraintEnd_toEndOf="@id/iv_bell"
             app:layout_constraintStart_toStartOf="@id/iv_bell"
