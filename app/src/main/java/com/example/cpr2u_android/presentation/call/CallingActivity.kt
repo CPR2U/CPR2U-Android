@@ -3,12 +3,17 @@ package com.example.cpr2u_android.presentation.call
 import android.os.Bundle
 import android.os.Handler
 import android.widget.TextView
+import androidx.lifecycle.flowWithLifecycle
 import com.example.cpr2u_android.R
 import com.example.cpr2u_android.databinding.ActivityCallingBinding
 import com.example.cpr2u_android.presentation.base.BaseActivity
+import com.example.cpr2u_android.util.UiState
+import kotlinx.coroutines.flow.onEach
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.*
 
 class CallingActivity : BaseActivity<ActivityCallingBinding>(R.layout.activity_calling) {
+    private val callViewModel: CallViewModel by viewModel()
 
     private var timerSec: Int = 0
     private var time: TimerTask? = null
@@ -18,7 +23,15 @@ class CallingActivity : BaseActivity<ActivityCallingBinding>(R.layout.activity_c
         super.onCreate(savedInstanceState)
 
         binding.tvSituationEnd.setOnClickListener {
-            finish()
+            callViewModel.postCallEnd()
+            callViewModel.callEndUIState.flowWithLifecycle(lifecycle).onEach {
+                when(it) {
+                    is UiState.Success -> {
+                        finish()
+                    }
+                    else -> {}
+                }
+            }
         }
 
         timerText = binding.tvMinute
