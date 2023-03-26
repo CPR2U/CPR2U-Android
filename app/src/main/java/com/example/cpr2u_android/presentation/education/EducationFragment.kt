@@ -10,7 +10,6 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragment_education) {
     private val educationViewModel: EducationViewModel by viewModel()
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         educationViewModel.getUserInfo()
@@ -66,5 +65,10 @@ class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragme
         binding.clQuiz.setOnClickListener {
             startActivity(Intent(requireContext(), QuizActivity::class.java))
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        educationViewModel.getUserInfo()
     }
 }
