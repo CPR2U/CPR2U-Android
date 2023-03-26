@@ -9,5 +9,5 @@ interface CallService {
     @POST("/call")
     suspend fun postCall(
         @Body body: RequestCall,
-    ): String
+    ): Int
 }
