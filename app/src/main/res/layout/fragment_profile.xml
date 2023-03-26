@@ -4,7 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <variable
+            name="acquired"
+            type="Boolean" />
 
+        <import type="android.view.View" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -65,8 +69,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="27dp"
+                    android:visibility="@{acquired? View.VISIBLE : View.INVISIBLE}"
                     android:src="@drawable/ic_heart_person_big"
-                    android:visibility="visible"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -77,7 +81,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="27dp"
                     android:src="@drawable/ic_person_big"
-                    android:visibility="invisible"
+                    android:visibility="@{acquired? View.INVISIBLE : View.VISIBLE}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -123,41 +127,52 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-            <TextView
-                android:id="@+id/tv_expiration_period"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
-                android:layout_marginTop="21dp"
-                android:fontFamily="@font/notosans_bold"
-                android:text="Expiration period"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/cl_user_text" />
-
-            <ProgressBar
-                android:id="@+id/progress_bar_expiration_period"
-                style="@android:style/Widget.ProgressBar.Horizontal"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/cl_expiration_period"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="14dp"
-                android:layout_marginTop="8dp"
-                android:progress="33"
-                android:progressDrawable="@drawable/progress_bar"
-                app:layout_constraintTop_toBottomOf="@id/tv_expiration_period" />
+                android:visibility="@{acquired? View.VISIBLE : View.GONE}"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cl_user_text"
+                android:layout_height="wrap_content" >
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:fontFamily="@font/notosans_regular"
-                android:text="2023.05.26"
-                android:textColor="@color/black"
-                android:textSize="16sp"
-                app:layout_constraintEnd_toEndOf="@id/progress_bar_expiration_period"
-                app:layout_constraintTop_toBottomOf="@id/progress_bar_expiration_period" />
+                <TextView
+                    android:id="@+id/tv_expiration_period"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginTop="21dp"
+                    android:fontFamily="@font/notosans_bold"
+                    android:text="Expiration period"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ProgressBar
+                    android:id="@+id/progress_bar_expiration_period"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="14dp"
+                    android:layout_marginTop="8dp"
+                    android:progress="33"
+                    android:progressDrawable="@drawable/progress_bar"
+                    app:layout_constraintTop_toBottomOf="@id/tv_expiration_period" />
+
+                <TextView
+                    android:id="@+id/tv_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/notosans_regular"
+                    android:textColor="@color/black"
+                    android:textSize="16sp"
+                    app:layout_constraintEnd_toEndOf="@id/progress_bar_expiration_period"
+                    app:layout_constraintTop_toBottomOf="@id/progress_bar_expiration_period" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
