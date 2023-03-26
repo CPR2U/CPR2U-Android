@@ -1,8 +1,11 @@
 package com.example.cpr2u_android.presentation.education
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cpr2u_android.data.model.response.education.QuizzesListData
+import com.example.cpr2u_android.domain.model.UserInfo
 import com.example.cpr2u_android.domain.repository.education.EducationRepository
 import com.example.cpr2u_android.util.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +23,9 @@ class EducationViewModel(private val educationRepository: EducationRepository) :
     private val _quizProgressUIState = MutableStateFlow<UiState<Boolean>>(UiState.Loading)
     val quizProgressUIState: StateFlow<UiState<Boolean>> = _quizProgressUIState
 
+    private val _userInfoUIState = MutableStateFlow<UiState<Boolean>>(UiState.Loading)
+    val userInfoUIState: StateFlow<UiState<Boolean>> = _userInfoUIState
+
     private var _quizzesList = listOf<QuizzesListData>()
     val quizzesList = _quizzesList
 
@@ -28,10 +34,14 @@ class EducationViewModel(private val educationRepository: EducationRepository) :
     var index: Int = 0
     var correctCount: Int = 0
 
+    var _userInfo = MutableLiveData<UserInfo>()
+
+    //    var _userInfo = MutableLiveData<UserInfo>(-1,-1, -1, -1, -1, "", "", -1.0)
+    var userInfo: LiveData<UserInfo> = _userInfo
     fun postLectureId() = viewModelScope.launch {
         kotlin.runCatching {
             _testUIState.emit(UiState.Loading)
-            educationRepository.postLectureId(0)
+            educationRepository.postLectureId(1)
         }.onSuccess {
             _testUIState.emit(UiState.Success(true))
             Timber.d("post-lecture-id-success $it")
@@ -68,5 +78,28 @@ class EducationViewModel(private val educationRepository: EducationRepository) :
 
     fun getInitQuizzesList(): List<QuizzesListData> {
         return _quizzesList
+    }
+
+    fun getUserInfo() = viewModelScope.launch {
+        kotlin.runCatching {
+            educationRepository.getUserInfo()
+        }.onSuccess {
+            _userInfo.value = UserInfo(
+                nickname = it.data.nickname,
+                angelStatus = it.data.angelStatus,
+                progressPercent = it.data.progressPercent,
+                isLectureCompleted = it.data.isLectureCompleted,
+                isQuizCompleted = it.data.isQuizCompleted,
+                isPostureCompleted = it.data.isPostureCompleted,
+                daysLeftUntilExpiration = it.data.daysLeftUntilExpiration,
+                lastLectureTitle = it.data.lastLectureTitle,
+            )
+            _userInfoUIState.emit(UiState.Success(true))
+            Timber.d("get-user-info-success -> $it")
+            Timber.d("viewmodel userInfo -> $_userInfo")
+        }.onFailure {
+            Timber.d("get-user-info-fail -> $it")
+            _userInfoUIState.emit(UiState.Failure("$it"))
+        }
     }
 }

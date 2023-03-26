@@ -2,6 +2,7 @@ package com.example.cpr2u_android.data.api
 
 import com.example.cpr2u_android.data.model.response.auth.GeneralResponse
 import com.example.cpr2u_android.data.model.response.education.ResponseQuizzesList
+import com.example.cpr2u_android.data.model.response.education.ResponseUserInfo
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -13,11 +14,14 @@ interface EducationService {
         @Query("lectureId") lectureId: Int,
     ): GeneralResponse
 
-    @GET("/education/quizzes")
+    @GET("education/quizzes")
     suspend fun getQuizzes(): ResponseQuizzesList
 
     @POST("quizzes/progress")
     suspend fun postQuizProgress(
         @Body score: Int,
     ): GeneralResponse
+
+    @GET("education")
+    suspend fun getUserInfo(): ResponseUserInfo
 }
