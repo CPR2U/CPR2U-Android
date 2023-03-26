@@ -2,14 +2,16 @@ package com.example.cpr2u_android.presentation.call
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.location.Address
+import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -20,17 +22,29 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.flowWithLifecycle
 import com.example.cpr2u_android.R
 import com.example.cpr2u_android.databinding.FragmentCallBinding
+import com.example.cpr2u_android.util.UiState
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationListener
-import com.google.android.gms.maps.*
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.* // ktlint-disable no-wildcard-imports
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
+import kotlinx.coroutines.flow.onEach
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import timber.log.Timber
 import java.util.*
+import kotlin.properties.Delegates
 
 class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
+    private val callViewModel: CallViewModel by viewModel()
     private lateinit var binding: FragmentCallBinding
     private val locationPermissionCode = 100
     lateinit var mapFragment: MapView
@@ -45,6 +59,11 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
     private var timerStarted = false
     private var timeLeftInMillis = 0L
     private lateinit var countDownTimer: CountDownTimer
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var latitude by Delegates.notNull<Double>()
+    private var longitude by Delegates.notNull<Double>()
+    private lateinit var address: Address
+    private lateinit var fullAddress: String
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
@@ -95,45 +114,77 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
-        if (ActivityCompat.checkSelfPermission(
+        mMap = googleMap
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+
+        // Check for permission to access location
+        if (ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION,
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-            ) != PackageManager.PERMISSION_GRANTED
+            ) == PackageManager.PERMISSION_GRANTED
         ) {
+            // Get current location
+            fusedLocationClient.lastLocation.addOnSuccessListener(
+                requireActivity(),
+                OnSuccessListener<Location> { location ->
+                    // Got last known location. In some rare situations, this can be null.
+                    if (location != null) {
+                        // Get latitude and longitude from location
+                        latitude = location.latitude
+                        longitude = location.longitude
+                        // Use the latitude and longitude as needed
+                        Log.d("LOCATION : ", "Latitude: $latitude, Longitude: $longitude")
+
+                        val markerOptions = MarkerOptions().apply {
+                            position(LatLng(latitude, longitude))
+                            title("Current Location")
+                        }
+                        mMap.addMarker(markerOptions)
+
+                        // 카메라 이동 및 줌인
+                        mMap.moveCamera(
+                            CameraUpdateFactory.newLatLngZoom(
+                                LatLng(
+                                    latitude,
+                                    longitude,
+                                ),
+                                15f,
+                            ),
+                        )
+
+                        val geocoder = Geocoder(requireContext(), Locale.getDefault())
+                        val addresses: List<Address>? = geocoder.getFromLocation(
+                            latitude,
+                            longitude,
+                            1,
+                        )
+
+                        if (addresses != null) {
+                            if (addresses.isNotEmpty()) {
+                                address = addresses[0]
+                                fullAddress = address.getAddressLine(0) // full address name
+                                Timber.d("ADDRESS : $address")
+                                Timber.d("FULL ADDRESS : $fullAddress")
+                                val tvLocation = view?.findViewById<TextView>(R.id.tv_location)
+                                tvLocation?.text = fullAddress
+                            }
+                        }
+                    }
+                },
+            ).addOnFailureListener(
+                requireActivity(),
+                OnFailureListener { e ->
+                    // Handle failure
+                },
+            )
+        } else {
+            // Request permission to access location
             ActivityCompat.requestPermissions(
                 requireActivity(),
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                locationPermissionCode,
+                LOCATION_PERMISSION_REQUEST_CODE,
             )
-            return
         }
-        mMap = googleMap ?: return
-        mMap.isMyLocationEnabled = true
-
-        // 처음 화면 서울 -> 현재 위치 버튼 눌러야 내위치 이동
-        val posGps: LatLng = LatLng(37.5642135, 127.0016985)
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(posGps, 15f))
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(15f), 2000, null)
-
-        mMap.uiSettings.isMyLocationButtonEnabled = true
-        mMap.uiSettings.isZoomControlsEnabled = true
-
-        mLocationManager =
-            requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if (ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION,
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
-//        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this)
     }
 
     private fun startTimer() {
@@ -152,7 +203,17 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
                     fadeIn.visibility = View.INVISIBLE
                     progressBell.visibility = View.INVISIBLE
                     fadeInText.visibility = View.INVISIBLE
-                    startActivity(Intent(requireContext(), CallingActivity::class.java))
+                    // TODO : 호출 서버통신
+                    callViewModel.postCall(latitude, longitude, fullAddress)
+                    callViewModel.callUIState.flowWithLifecycle(lifecycle).onEach {
+                        when (it) {
+                            is UiState.Success -> {
+                                Timber.d("post call success")
+                                startActivity(Intent(requireContext(), CallingActivity::class.java))
+                            }
+                            else -> {}
+                        }
+                    }
                 }
             }.start()
 
@@ -215,7 +276,6 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
                 15f,
             ),
         )
-
         // Stop updating the user's location to save battery
 //        mLocationManager.removeUpdates(this)
     }
@@ -223,5 +283,6 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
     companion object {
         /** Long Press 판단 기준 시간 */
         private const val LONG_PRESSED_TIME = 2L
+        private const val LOCATION_PERMISSION_REQUEST_CODE = 100
     }
 }
