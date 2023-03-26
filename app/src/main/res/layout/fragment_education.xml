@@ -55,6 +55,18 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <ImageView
+                android:id="@+id/iv_heart_person"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="14dp"
+                android:layout_marginStart="23dp"
+                android:src="@drawable/ic_heart_person"
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -68,25 +80,36 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/notosans_regular"
-                    android:text="Hi 채영"
+                    android:text="Hi "
                     android:textColor="@color/black"
                     android:textSize="12sp"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/notosans_regular"
+                    android:text="채영"
+                    android:textColor="@color/black"
+                    android:textSize="12sp"
+                    app:layout_constraintStart_toEndOf="@id/tv_education_nickname_title"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/tv_education_nickname_subtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="You are not a "
+                    android:text="Certification Status: "
                     android:textColor="@color/black"
                     android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="@id/tv_education_nickname_title"
                     app:layout_constraintTop_toBottomOf="@id/tv_education_nickname_title" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/notosans_bold"
-                    android:text="CPR ANGLE"
+                    android:text="ACQUIRED (D-19)"
                     android:textColor="@color/main_red"
                     android:textSize="14sp"
                     app:layout_constraintBottom_toBottomOf="@id/tv_education_nickname_subtitle"
