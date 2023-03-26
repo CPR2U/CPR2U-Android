@@ -22,6 +22,8 @@ import timber.log.Timber
 
 class LectureActivity : BaseActivity<ActivityLectureBinding>(R.layout.activity_lecture) {
     private val educationViewModel: EducationViewModel by viewModel()
+    private lateinit var handler: Handler
+    private lateinit var runnable: Runnable
     private var start: Long = 0
     private var end: Long = 0
     private var sum: Long = 0
@@ -30,9 +32,9 @@ class LectureActivity : BaseActivity<ActivityLectureBinding>(R.layout.activity_l
         binding.webView.webViewClient = WebViewClient()
         // TODO : 추후 학습 영상 링크 url로 변경 필요
         binding.webView.loadUrl("https://www.naver.com/")
-        Timber.d("## on Start -> $start")
 
-        Handler(Looper.getMainLooper()).postDelayed({
+        handler = Handler(Looper.getMainLooper())
+        runnable = Runnable {
             val dialog = Dialog(this)
             val binding = DataBindingUtil.inflate<DialogQuizBinding>(
                 LayoutInflater.from(this),
@@ -60,6 +62,17 @@ class LectureActivity : BaseActivity<ActivityLectureBinding>(R.layout.activity_l
             )
 
             dialog.show()
-        }, 5000L)
+        }
+        handler.postDelayed(runnable, 5000L)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacks(runnable)
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        handler.removeCallbacks(runnable)
     }
 }
