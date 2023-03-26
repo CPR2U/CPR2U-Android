@@ -24,8 +24,10 @@ import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.flowWithLifecycle
 import com.example.cpr2u_android.R
 import com.example.cpr2u_android.databinding.FragmentCallBinding
+import com.example.cpr2u_android.util.UiState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationServices
@@ -35,11 +37,14 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
+import kotlinx.coroutines.flow.onEach
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 import java.util.*
 import kotlin.properties.Delegates
 
 class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
+    private val callViewModel: CallViewModel by viewModel()
     private lateinit var binding: FragmentCallBinding
     private val locationPermissionCode = 100
     lateinit var mapFragment: MapView
@@ -199,7 +204,16 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
                     progressBell.visibility = View.INVISIBLE
                     fadeInText.visibility = View.INVISIBLE
                     // TODO : 호출 서버통신
-                    startActivity(Intent(requireContext(), CallingActivity::class.java))
+                    callViewModel.postCall(latitude, longitude, fullAddress)
+                    callViewModel.callUIState.flowWithLifecycle(lifecycle).onEach {
+                        when (it) {
+                            is UiState.Success -> {
+                                Timber.d("post call success")
+                                startActivity(Intent(requireContext(), CallingActivity::class.java))
+                            }
+                            else -> {}
+                        }
+                    }
                 }
             }.start()
 

@@ -7,7 +7,7 @@ data class RequestCall(
     @SerializedName("full_address")
     val fullAddress: String,
     @SerializedName("latitude")
-    val latitude: Int,
+    val latitude: Double,
     @SerializedName("longitude")
-    val longitude: Int
+    val longitude: Double
 )
