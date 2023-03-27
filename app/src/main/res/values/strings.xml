@@ -36,4 +36,25 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+
+    <string-array name="tfe_pe_models_array">
+        <item>Movenet Lightning</item>
+        <item>Movenet Thunder</item>
+        <item>Movenet MultiPose</item>
+        <item>Posenet</item>
+    </string-array>
+
+    <string-array name="tfe_pe_device_name">
+        <item>CPU</item>
+        <item>GPU</item>
+        <item>NNAPI</item>
+    </string-array>
+
+    <string-array name="tfe_pe_tracker_array">
+        <item>Off</item>
+        <item>BoundingBox</item>
+        <item>Keypoint</item>
+    </string-array>
+
+    <string name="tfe_pe_tv_score">Score: %.2f</string>
 </resources>
