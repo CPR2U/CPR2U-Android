@@ -116,4 +116,12 @@ dependencies {
     implementation "io.insert-koin:koin-androidx-scope:$koin_version"
     implementation "io.insert-koin:koin-androidx-viewmodel:$koin_version"
     testImplementation "io.insert-koin:koin-test:$koin_version"
+
+    implementation 'org.tensorflow:tensorflow-lite:2.5.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.5.0'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.3.0'
+
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation "com.google.truth:truth:1.1.3"
 }
