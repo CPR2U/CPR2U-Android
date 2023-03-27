@@ -5,14 +5,15 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.graphics.Point
+import android.hardware.Camera
 import android.os.Bundle
 import android.util.Log
 import android.view.SurfaceView
 import android.view.View
 import android.view.WindowManager
-import android.widget.*
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
@@ -22,7 +23,8 @@ import com.example.cpr2u_android.ml.camera.CameraSource
 import com.example.cpr2u_android.ml.data.BodyPart
 import com.example.cpr2u_android.ml.data.Device
 import com.example.cpr2u_android.ml.data.Person
-import com.example.cpr2u_android.ml.ml.*
+import com.example.cpr2u_android.ml.ml.ModelType
+import com.example.cpr2u_android.ml.ml.MoveNet
 import com.example.cpr2u_android.presentation.base.BaseFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,35 +37,11 @@ class PosePractice2Fragment :
         private const val FRAGMENT_DIALOG = "dialog"
     }
 
-    /** A [SurfaceView] for camera preview.   */
     private lateinit var surfaceView: SurfaceView
-
-    /** Default pose estimation model is 1 (MoveNet Thunder)
-     * 0 == MoveNet Lightning model
-     * 1 == MoveNet Thunder model
-     * 2 == MoveNet MultiPose model
-     * 3 == PoseNet model
-     *
-     * => 1(Movenet Thunder)를 사용할 것. 제일 정확도가 높음.
-     **/
-    private var modelPos = 1
-
-    /** Default device is CPU */
-    private var device = Device.CPU
-
+    private var modelPos = 1 // 1 == MoveNet Thunder model
+    private var device = Device.GPU
     private lateinit var tvScore: TextView
-    private lateinit var tvFPS: TextView
-    private lateinit var spnDevice: Spinner
-    private lateinit var spnModel: Spinner
-    private lateinit var spnTracker: Spinner
-    private lateinit var vTrackerOption: View
-    private lateinit var tvClassificationValue1: TextView
-    private lateinit var tvClassificationValue2: TextView
-    private lateinit var tvClassificationValue3: TextView
-    private lateinit var swClassification: SwitchCompat
-    private lateinit var vClassificationOption: View
     private var cameraSource: CameraSource? = null
-    private var isClassifyPose = false
 
     /**
      * CPR 자세 인식에 필요한 변수들
@@ -74,15 +52,14 @@ class PosePractice2Fragment :
     private var increased = true
     private var wristList = arrayListOf<Float>()
 
-    private final val TAG = "CPR2U"
+    private val TAG = "CPR2U"
 
     private val requestPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission(),
         ) { isGranted: Boolean ->
             if (isGranted) {
-                // Permission is granted. Continue the action or workflow in your
-                // app.
+                // Permission is granted. Continue the action or workflow in your app.
                 openCamera()
             } else {
                 // Explain to the user that the feature is unavailable because the
@@ -94,70 +71,17 @@ class PosePractice2Fragment :
 //                    .show(supportFragmentManager, FRAGMENT_DIALOG)
             }
         }
-    private var changeModelListener = object : AdapterView.OnItemSelectedListener {
-        override fun onNothingSelected(parent: AdapterView<*>?) {
-            // do nothing
-        }
-
-        override fun onItemSelected(
-            parent: AdapterView<*>?,
-            view: View?,
-            position: Int,
-            id: Long,
-        ) {
-            changeModel(position)
-        }
-    }
-
-    private var changeDeviceListener = object : AdapterView.OnItemSelectedListener {
-        override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-            changeDevice(position)
-        }
-
-        override fun onNothingSelected(parent: AdapterView<*>?) {
-            // do nothing
-        }
-    }
-
-    private var changeTrackerListener = object : AdapterView.OnItemSelectedListener {
-        override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-            changeTracker(position)
-        }
-
-        override fun onNothingSelected(parent: AdapterView<*>?) {
-            // do nothing
-        }
-    }
-
-    private var setClassificationListener =
-        CompoundButton.OnCheckedChangeListener { _, isChecked ->
-            showClassificationResult(isChecked)
-            isClassifyPose = isChecked
-            isPoseClassifier()
-        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Timber.d("에엥.. 여기까지 오긴하니")
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
+        val camera = Camera.CameraInfo.CAMERA_FACING_FRONT
         // keep screen on while app is running
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         tvScore = view.findViewById(R.id.tvScore)
-        tvFPS = view.findViewById(R.id.tvFps)
-        spnModel = view.findViewById(R.id.spnModel)
-        spnDevice = view.findViewById(R.id.spnDevice)
-        spnTracker = view.findViewById(R.id.spnTracker)
-        vTrackerOption = view.findViewById(R.id.vTrackerOption)
         surfaceView = view.findViewById(R.id.surfaceView)
-        tvClassificationValue1 = view.findViewById(R.id.tvClassificationValue1)
-        tvClassificationValue2 = view.findViewById(R.id.tvClassificationValue2)
-        tvClassificationValue3 = view.findViewById(R.id.tvClassificationValue3)
-        swClassification = view.findViewById(R.id.swPoseClassification)
-        vClassificationOption = view.findViewById(R.id.vClassificationOption)
-        initSpinner()
-        spnModel.setSelection(modelPos)
-        swClassification.setOnCheckedChangeListener(setClassificationListener)
+        surfaceView.display
         if (!isCameraPermissionGranted()) {
             requestPermission()
         }
@@ -189,6 +113,8 @@ class PosePractice2Fragment :
 
     // open camera
     private fun openCamera() {
+        val display = activity?.windowManager?.defaultDisplay // in case of Activity
+/* val display = activity!!.windowManaver.defaultDisplay */ // in case of Fragment
         if (isCameraPermissionGranted()) {
             if (cameraSource == null) {
                 cameraSource =
@@ -209,13 +135,6 @@ class PosePractice2Fragment :
                                     getString(R.string.tfe_pe_tv_score, personScore ?: 0f)
                                 Timber.d("TV SCORE -> $personScore")
 
-                                // tvClassificationValue1~3: 내가 선택한 ML 모델 옵션(CPU/GPU, 모델 종류 등)
-                                poseLabels?.sortedByDescending { it.second }?.let {
-                                    tvClassificationValue1.text = "에엥..."
-                                    tvClassificationValue2.text = "에에엥..."
-                                    tvClassificationValue3.text = "에에에엥..."
-                                }
-
                                 /**
                                  * TODO: 여기서부터 CPR 자세 인식 코드 시작
                                  * persons에 더 많은 person 데이터가 있을 수록 정확도가 높아진다.
@@ -227,7 +146,6 @@ class PosePractice2Fragment :
                     ).apply {
                         prepareCamera()
                     }
-                isPoseClassifier()
                 lifecycleScope.launch(Dispatchers.Main) {
                     cameraSource?.initCamera()
                 }
@@ -286,9 +204,12 @@ class PosePractice2Fragment :
 
             // wristList에 ${손목의 최대 높이 - 손목의 최소 높이}를 저장
             wristList.add(maxHeight - minHeight)
-
+            Log.e(TAG, "wristList : $wristList")
             // wristList에 저장된 깊이 값으로 CPR 깊이가 적절한지 확인한다.
             // wristList에 저장된 값의 개수로 CPR 속도(2분 동안 CPR한 횟수)가 적절한지 확인한다.
+            //  가슴압박 속도는 분당 100~120회, 깊이는 5~6㎝로 빠르고 깊게 30회 압박
+            // 2분 -> 200~240회 : 추후 1분당 평균 내는것도 나쁘지 않을듯
+
             Log.i(TAG, "현재 손목 깊이: ${maxHeight - minHeight}, max: $maxHeight, min: $minHeight")
         }
 
@@ -301,123 +222,15 @@ class PosePractice2Fragment :
         beforeWrist = yWrist
     }
 
-    private fun convertPoseLabels(pair: Pair<String, Float>?): String {
-        if (pair == null) return "empty"
-        return "${pair.first} (${String.format("%.2f", pair.second)})"
-    }
-
-    // Tensorflow Lite Example에서 기본적으로 제공하는 자세 분석 기능(코브라, 의자, 전사자세)
-    private fun isPoseClassifier() {
-        cameraSource?.setClassifier(if (isClassifyPose) PoseClassifier.create(requireContext()) else null)
-    }
-
-    // Initialize spinners to let user select model/accelerator/tracker.
-    private fun initSpinner() {
-        ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.tfe_pe_models_array,
-            android.R.layout.simple_spinner_item,
-        ).also { adapter ->
-            // Specify the layout to use when the list of choices appears
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            // Apply the adapter to the spinner
-            spnModel.adapter = adapter
-            spnModel.onItemSelectedListener = changeModelListener
-        }
-
-        ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.tfe_pe_device_name,
-            android.R.layout.simple_spinner_item,
-        ).also { adaper ->
-            adaper.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-            spnDevice.adapter = adaper
-            spnDevice.onItemSelectedListener = changeDeviceListener
-        }
-
-        ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.tfe_pe_tracker_array,
-            android.R.layout.simple_spinner_item,
-        ).also { adaper ->
-            adaper.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-            spnTracker.adapter = adaper
-            spnTracker.onItemSelectedListener = changeTrackerListener
-        }
-    }
-
-    // Change model when app is running
-    private fun changeModel(position: Int) {
-        if (modelPos == position) return
-        modelPos = position
-        createPoseEstimator()
-    }
-
-    // Change device (accelerator) type when app is running
-    private fun changeDevice(position: Int) {
-        val targetDevice = when (position) {
-            0 -> Device.CPU
-            1 -> Device.GPU
-            else -> Device.NNAPI
-        }
-        if (device == targetDevice) return
-        device = targetDevice
-        createPoseEstimator()
-    }
-
-    // Change tracker for Movenet MultiPose model
-    private fun changeTracker(position: Int) {
-        cameraSource?.setTracker(
-            when (position) {
-                1 -> TrackerType.BOUNDING_BOX
-                2 -> TrackerType.KEYPOINTS
-                else -> TrackerType.OFF
-            },
-        )
-    }
-
     // 자세 추정 모델 실행 (Movenet Thunder, CPU가 적절)
     private fun createPoseEstimator() {
         // For MoveNet MultiPose, hide score and disable pose classifier as the model returns
         // multiple Person instances.
         val poseDetector = when (modelPos) {
-            0 -> {
-                // MoveNet Lightning (SinglePose)
-                showPoseClassifier(true)
-                showDetectionScore(true)
-                showTracker(false)
-                MoveNet.create(requireContext(), device, ModelType.Lightning)
-            }
             1 -> {
                 // MoveNet Thunder (SinglePose)
-                showPoseClassifier(true)
                 showDetectionScore(true)
-                showTracker(false)
                 MoveNet.create(requireContext(), device, ModelType.Thunder)
-            }
-            2 -> {
-                // MoveNet (Lightning) MultiPose
-                showPoseClassifier(false)
-                showDetectionScore(false)
-                // Movenet MultiPose Dynamic does not support GPUDelegate
-                if (device == Device.GPU) {
-                    showToast("aaaa")
-                }
-                showTracker(true)
-                MoveNetMultiPose.create(
-                    requireContext(),
-                    device,
-                    Type.Dynamic,
-                )
-            }
-            3 -> {
-                // PoseNet (SinglePose)
-                showPoseClassifier(true)
-                showDetectionScore(true)
-                showTracker(false)
-                PoseNet.create(requireContext(), device)
             }
             else -> {
                 null
@@ -428,38 +241,9 @@ class PosePractice2Fragment :
         }
     }
 
-    // Show/hide the pose classification option.
-    private fun showPoseClassifier(isVisible: Boolean) {
-        vClassificationOption.visibility = if (isVisible) View.VISIBLE else View.GONE
-        if (!isVisible) {
-            swClassification.isChecked = false
-        }
-    }
-
     // Show/hide the detection score.
     private fun showDetectionScore(isVisible: Boolean) {
         tvScore.visibility = if (isVisible) View.VISIBLE else View.GONE
-    }
-
-    // Show/hide classification result.
-    private fun showClassificationResult(isVisible: Boolean) {
-        val visibility = if (isVisible) View.VISIBLE else View.GONE
-        tvClassificationValue1.visibility = visibility
-        tvClassificationValue2.visibility = visibility
-        tvClassificationValue3.visibility = visibility
-    }
-
-    // Show/hide the tracking options.
-    private fun showTracker(isVisible: Boolean) {
-        if (isVisible) {
-            // Show tracker options and enable Bounding Box tracker.
-            vTrackerOption.visibility = View.VISIBLE
-            spnTracker.setSelection(1)
-        } else {
-            // Set tracker type to off and hide tracker option.
-            vTrackerOption.visibility = View.GONE
-            spnTracker.setSelection(0)
-        }
     }
 
     private fun requestPermission() {
@@ -480,10 +264,6 @@ class PosePractice2Fragment :
                 )
             }
         }
-    }
-
-    private fun showToast(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
     }
 
     /**
