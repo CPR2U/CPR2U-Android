@@ -410,7 +410,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="43dp"
+                android:layout_marginTop="36dp"
                 android:fontFamily="@font/notosans_bold"
                 android:paddingBottom="17dp"
                 android:text="PASSED!"
@@ -423,8 +423,9 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_quit"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="40dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/rectangle_fill_red_radius_100dp"
             android:fontFamily="@font/notosans_bold"

@@ -23,6 +23,9 @@ class EducationViewModel(private val educationRepository: EducationRepository) :
     private val _quizProgressUIState = MutableStateFlow<UiState<Boolean>>(UiState.Loading)
     val quizProgressUIState: StateFlow<UiState<Boolean>> = _quizProgressUIState
 
+    private val _exercisesProgressUIState = MutableStateFlow<UiState<Boolean>>(UiState.Loading)
+    val exercisesProgressUIState: StateFlow<UiState<Boolean>> = _exercisesProgressUIState
+
     private val _userInfoUIState = MutableStateFlow<UiState<Boolean>>(UiState.Loading)
     val userInfoUIState: StateFlow<UiState<Boolean>> = _userInfoUIState
 
@@ -73,6 +76,18 @@ class EducationViewModel(private val educationRepository: EducationRepository) :
         }.onFailure {
             Timber.d("post-quiz-progress-fail -> $it")
             _quizProgressUIState.emit(UiState.Failure("$it"))
+        }
+    }
+
+    fun postExercisesProgress() = viewModelScope.launch {
+        kotlin.runCatching {
+            educationRepository.postExercisesProgress(80)
+        }.onSuccess {
+            Timber.d("post-exercises-success -> $it")
+            _exercisesProgressUIState.emit(UiState.Success(true))
+        }.onFailure {
+            Timber.d("post-exercises-fail -> $it")
+            _exercisesProgressUIState.emit(UiState.Failure("$it"))
         }
     }
 
