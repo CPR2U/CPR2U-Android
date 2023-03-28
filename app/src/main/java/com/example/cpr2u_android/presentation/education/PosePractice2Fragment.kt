@@ -5,9 +5,9 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
-import android.graphics.Point
 import android.hardware.Camera
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.SurfaceView
 import android.view.View
@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.cpr2u_android.R
 import com.example.cpr2u_android.databinding.FragmentPosePractice2Binding
 import com.example.cpr2u_android.ml.camera.CameraSource
@@ -29,6 +30,7 @@ import com.example.cpr2u_android.presentation.base.BaseFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.*
 
 class PosePractice2Fragment :
     BaseFragment<FragmentPosePractice2Binding>(R.layout.fragment_pose_practice_2) {
@@ -72,6 +74,12 @@ class PosePractice2Fragment :
             }
         }
 
+    private var timerSec: Int = 0
+    private var time: TimerTask? = null
+    private var timerText: TextView? = null
+    private val handler: Handler = Handler()
+    private lateinit var updater: Runnable
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -85,6 +93,38 @@ class PosePractice2Fragment :
         if (!isCameraPermissionGranted()) {
             requestPermission()
         }
+
+        timerText = binding.tvTimer
+        timerSec = 0
+        time = object : TimerTask() {
+            override fun run() {
+                updateTime()
+                if (timerSec >= 15) {
+                    view.post {
+                        findNavController().navigate(R.id.action_posePractice2Fragment_to_posePractice3Fragment)
+                        Timber.d("에에..")
+                    }
+                    return
+                }
+                timerSec++
+            }
+        }
+        val timer = Timer()
+        timer.schedule(time, 0, 1000)
+
+        binding.tvQuit.setOnClickListener {
+            activity?.finish()
+        }
+    }
+
+    private fun updateTime() {
+        updater = Runnable {
+            val minute = if (timerSec / 60 < 1) "00" else "0${(timerSec / 60)}"
+            val second =
+                if (timerSec % 60 < 10) "0${(timerSec % 60)}" else (timerSec % 60).toString()
+            timerText?.text = "$minute : $second"
+        }
+        handler.post(updater)
     }
 
     override fun onStart() {
@@ -100,6 +140,7 @@ class PosePractice2Fragment :
     override fun onPause() {
         cameraSource?.close()
         cameraSource = null
+        handler.removeCallbacks(updater)
         super.onPause()
     }
 
