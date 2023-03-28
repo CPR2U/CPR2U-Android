@@ -13,6 +13,25 @@ class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragme
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         educationViewModel.getUserInfo()
+        initClickListener()
+        observeUserInfo()
+    }
+
+    private fun initClickListener() {
+        binding.clLecture.setOnClickListener {
+            startActivity(Intent(requireContext(), LectureActivity::class.java))
+        }
+
+        binding.clQuiz.setOnClickListener {
+            startActivity(Intent(requireContext(), QuizActivity::class.java))
+        }
+
+        binding.clPosturePractice.setOnClickListener {
+            startActivity(Intent(requireContext(), PosePracticeActivity::class.java))
+        }
+    }
+
+    private fun observeUserInfo() {
         educationViewModel.userInfo.observe(viewLifecycleOwner) {
             if (educationViewModel.userInfo.value?.isLectureCompleted == 2) {
                 binding.clLecture.isSelected = true
@@ -38,7 +57,8 @@ class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragme
                 binding.tvPosePracticeComplete.text = "Not Completed"
             }
 
-            binding.progressBar.progress = (educationViewModel._userInfo.value?.progressPercent!! * 100).toInt()
+            binding.progressBar.progress =
+                (educationViewModel._userInfo.value?.progressPercent!! * 100).toInt()
             binding.tvNickname.text = educationViewModel._userInfo.value?.nickname
 
             when (educationViewModel.userInfo.value?.angelStatus) {
@@ -56,14 +76,6 @@ class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragme
                     binding.tvUserAcquired.text = "UNACQUIRED"
                 }
             }
-        }
-
-        binding.clLecture.setOnClickListener {
-            startActivity(Intent(requireContext(), LectureActivity::class.java))
-        }
-
-        binding.clQuiz.setOnClickListener {
-            startActivity(Intent(requireContext(), QuizActivity::class.java))
         }
     }
 

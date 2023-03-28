@@ -22,6 +22,11 @@ interface EducationService {
         @Body score: Int,
     ): GeneralResponse
 
+    @POST("/education/exercises/progress")
+    suspend fun postExercisesProgress(
+        @Body score: Int,
+    ): GeneralResponse
+
     @GET("education")
     suspend fun getUserInfo(): ResponseUserInfo
 }

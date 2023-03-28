@@ -8,5 +8,6 @@ interface EducationDataSource {
     suspend fun postLectureId(lectureId: Int): GeneralResponse
     suspend fun getQuizzes(): ResponseQuizzesList
     suspend fun postQuizProgress(score: Int): GeneralResponse
+    suspend fun postExercisesProgress(score: Int): GeneralResponse
     suspend fun getUserInfo(): ResponseUserInfo
 }

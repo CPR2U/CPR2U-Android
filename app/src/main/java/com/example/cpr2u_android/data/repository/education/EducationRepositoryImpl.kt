@@ -20,6 +20,10 @@ class EducationRepositoryImpl(private val educationDataSource: EducationDataSour
         return educationDataSource.postQuizProgress(score)
     }
 
+    override suspend fun postExercisesProgress(score: Int): GeneralResponse {
+        return educationDataSource.postExercisesProgress(score)
+    }
+
     override suspend fun getUserInfo(): ResponseUserInfo {
         return educationDataSource.getUserInfo()
     }

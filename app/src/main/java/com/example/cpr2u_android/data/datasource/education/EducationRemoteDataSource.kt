@@ -18,6 +18,10 @@ class EducationRemoteDataSource(private val educationService: EducationService) 
         return educationService.postQuizProgress(score)
     }
 
+    override suspend fun postExercisesProgress(score: Int): GeneralResponse {
+        return educationService.postExercisesProgress(score)
+    }
+
     override suspend fun getUserInfo(): ResponseUserInfo {
         return educationService.getUserInfo()
     }
