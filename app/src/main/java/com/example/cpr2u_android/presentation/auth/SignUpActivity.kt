@@ -14,16 +14,13 @@ import java.util.regex.Pattern
 
 class SignUpActivity : BaseActivity<ActivitySignUpBinding>(R.layout.activity_sign_up) {
     private val authViewModel: AuthViewModel by viewModel()
-    private var isValidNickname: Boolean = false
-    private var isSuccess: Boolean = false
     private var phoneNumber: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         phoneNumber = intent.getStringExtra("phoneNumber").toString()
         initTextChangeEvent()
-        observeIsValidNickname()
-        observeSignUpSuccess()
+//        observeIsValidNickname()
         initConfirmClickListener()
     }
 
@@ -31,19 +28,28 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding>(R.layout.activity_sig
         binding.tvConfirm.setOnClickListener {
             if (binding.isError == false) {
                 authViewModel.getNickname(binding.etNickname.text.toString())
-                if (isValidNickname) {
-                    authViewModel.postSignUp(
-                        nickname = binding.etNickname.text.toString(),
-                        phoneNumber = phoneNumber,
-                    )
-                    if (isSuccess) navigateToNext()
-                } else {
-                    Timber.d("is valid -> false")
-                    Toast.makeText(
-                        this,
-                        "중복된 닉네임입니다. 다른 닉네임을 입력해주세요.",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                authViewModel.isValidNickname.observe(this) {
+                    if (it) {
+                        authViewModel.postSignUp(
+                            nickname = binding.etNickname.text.toString(),
+                            phoneNumber = phoneNumber,
+                        )
+                        authViewModel.isSuccess.observe(this) {
+                            if (it) {
+                                Timber.d("회원가입 성공")
+                                navigateToNext()
+                            } else {
+                                Timber.d("회원가입 실패")
+                            }
+                        }
+                    } else {
+                        Timber.d("is valid -> false")
+                        Toast.makeText(
+                            this,
+                            "중복된 닉네임입니다. 다른 닉네임을 입력해주세요.",
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    }
                 }
             } else if (binding.etNickname.text.isEmpty()) {
                 binding.isError = true
@@ -59,13 +65,8 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding>(R.layout.activity_sig
 
     private fun observeIsValidNickname() {
         authViewModel.isValidNickname.observe(this) {
-            isValidNickname = it
-        }
-    }
-
-    private fun observeSignUpSuccess() {
-        authViewModel.isSuccess.observe(this) {
-            isSuccess = it
+            Timber.d("isValideNickname -> $it")
+//            isValidNickname = it
         }
     }
 
