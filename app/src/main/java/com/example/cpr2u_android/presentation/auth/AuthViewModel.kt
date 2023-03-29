@@ -58,7 +58,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
             CPR2USharedPreference.setAccessToken(it.data.accessToken)
             CPR2USharedPreference.setRefreshToken(it.data.refreshToken)
         }.onFailure {
-            Timber.d("인증되지 않은 사용자. 회원가입 필요")
+            Timber.d("인증되지 않은 사용자. 회원가입 필요 $it")
             _isUser.value = false
         }
     }

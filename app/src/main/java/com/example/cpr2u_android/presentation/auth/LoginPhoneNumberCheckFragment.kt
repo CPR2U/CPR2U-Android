@@ -52,8 +52,10 @@ class LoginPhoneNumberCheckFragment :
                 if (smsCodeStr == signInViewModel.validationCode.value) {
                     signInViewModel.postLogin(
                         RequestLogin(
-                            CPR2USharedPreference.getDeviceToken(),
-                            smsCodeStr,
+                            deviceToken = CPR2USharedPreference.getDeviceToken(),
+                            phoneNumber = phoneNumber
+//                            CPR2USharedPreference.getDeviceToken(),
+//                            smsCodeStr,
                         ),
                     )
                     signInViewModel.isUser.observe(viewLifecycleOwner) {
