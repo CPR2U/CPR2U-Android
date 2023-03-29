@@ -4,6 +4,7 @@ import com.example.cpr2u_android.data.model.request.education.RequestCall
 import com.example.cpr2u_android.data.model.response.auth.GeneralResponse
 import com.example.cpr2u_android.data.model.response.call.ResponseCall
 import com.example.cpr2u_android.data.model.response.call.ResponseCallList
+import com.example.cpr2u_android.data.model.response.call.ResponseDispatch
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -23,4 +24,9 @@ interface CallService {
 
     @GET("/call")
     suspend fun getCallList(): ResponseCallList
+
+    @POST("/dispatch")
+    suspend fun postDispatch(
+        @Body cpr_call_id: Int,
+    ): ResponseDispatch
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cpr2u_android.data.model.request.education.RequestCall
+import com.example.cpr2u_android.data.model.response.call.ResponseCallList
 import com.example.cpr2u_android.domain.repository.call.CallRepository
 import com.example.cpr2u_android.util.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,12 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
 
     private val _callEndSuccess = MutableLiveData<Boolean>()
     val callEndSuccess: LiveData<Boolean> = _callEndSuccess
+
+    private val _dispatchSuccess = MutableLiveData<Boolean>()
+    val dispatchSuccess: LiveData<Boolean> = _dispatchSuccess
+
+    private val _callListInfo = MutableLiveData<ResponseCallList>()
+    val callListInfo: LiveData<ResponseCallList> = _callListInfo
 
     /*
     "latitude": 37.5440261,
@@ -74,8 +81,21 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
         }.onSuccess {
             Timber.d("get-call-list-success -> $it")
             it.data.callList
+            _callListInfo.value = it
+            Timber.d("_call List Info -> ${_callListInfo.value}")
         }.onFailure {
             Timber.d("get-call-list-fail -> $it")
+        }
+    }
+
+    fun postDispatch(callId: Int) = viewModelScope.launch {
+        kotlin.runCatching {
+            Timber.d("dispatch call id -> $callId")
+            callRepository.postDispatch(callId)
+        }.onSuccess {
+            Timber.d("post-dispatch-success -> $it")
+        }.onFailure {
+            Timber.d("post-dispatch-fail -> $it")
         }
     }
 }
