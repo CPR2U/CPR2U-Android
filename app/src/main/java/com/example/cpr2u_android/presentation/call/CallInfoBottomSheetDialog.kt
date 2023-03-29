@@ -1,5 +1,6 @@
 package com.example.cpr2u_android.presentation.call
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
@@ -43,6 +44,7 @@ class CallInfoBottomSheetDialog(val item: CallInfoBottomSheet) : BottomSheetDial
             mapInfo = item
             clMarkerInfo.visibility = View.VISIBLE
             clTimer.visibility = View.INVISIBLE
+            tvReport.visibility = View.INVISIBLE
             tvDispatch.setOnClickListener {
                 if (isDispatch) {
                     // 출동하기 성공시 dismiss
@@ -53,6 +55,7 @@ class CallInfoBottomSheetDialog(val item: CallInfoBottomSheet) : BottomSheetDial
                             Timber.d("it , dismiss ->$it")
                             clMarkerInfo.visibility = View.INVISIBLE
                             clTimer.visibility = View.VISIBLE
+                            tvReport.visibility = View.VISIBLE
                             tvDispatch.text = "DISPATCH END"
                             // 타이머 시작
                             timerText = binding.tvMinute
@@ -81,6 +84,19 @@ class CallInfoBottomSheetDialog(val item: CallInfoBottomSheet) : BottomSheetDial
                         }
                     }
                 }
+            }
+            tvReport.setOnClickListener {
+                Timber.d("callViewmodel id -> ${callViewModel.dispatchId.value}")
+
+                val bundle = Bundle().apply {
+                    putInt("dispatchId", callViewModel.dispatchId.value!!)
+                }
+                startActivity(
+                    Intent(
+                        requireContext(),
+                        DispatchReportActivity::class.java,
+                    ).putExtras(bundle),
+                )
             }
         }
     }

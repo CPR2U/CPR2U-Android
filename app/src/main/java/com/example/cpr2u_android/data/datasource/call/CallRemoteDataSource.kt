@@ -1,6 +1,7 @@
 package com.example.cpr2u_android.data.datasource.call
 
 import com.example.cpr2u_android.data.api.CallService
+import com.example.cpr2u_android.data.model.request.RequestDispatchReport
 import com.example.cpr2u_android.data.model.request.education.RequestCall
 import com.example.cpr2u_android.data.model.response.auth.GeneralResponse
 import com.example.cpr2u_android.data.model.response.call.ResponseCall
@@ -28,5 +29,9 @@ class CallRemoteDataSource(private val callService: CallService) : CallDataSourc
 
     override suspend fun postDispatchArrived(dispatchId: Int): GeneralResponse {
         return callService.postDispatchArrive(dispatchId)
+    }
+
+    override suspend fun postDispatchReport(data: RequestDispatchReport): GeneralResponse {
+        return callService.postDispatchReport(data)
     }
 }

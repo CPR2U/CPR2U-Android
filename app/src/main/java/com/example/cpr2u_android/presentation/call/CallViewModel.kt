@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cpr2u_android.data.model.request.RequestDispatchReport
 import com.example.cpr2u_android.data.model.request.education.RequestCall
 import com.example.cpr2u_android.data.model.response.call.ResponseCallList
 import com.example.cpr2u_android.domain.repository.call.CallRepository
@@ -16,7 +17,6 @@ import timber.log.Timber
 class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
 
     var _callId = -1
-    var dispatchId = -1
     private val _callUIState = MutableStateFlow<UiState<Boolean>>(UiState.Loading)
     val callUIState: StateFlow<UiState<Boolean>> = _callUIState
 
@@ -32,8 +32,14 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
     private val _dispatchArriveSuccess = MutableLiveData<Boolean>()
     val dispatchArriveSuccess: LiveData<Boolean> = _dispatchArriveSuccess
 
+    private val _dispatchReportSuccess = MutableLiveData<Boolean>()
+    val dispatchReportSuccess: LiveData<Boolean> = _dispatchReportSuccess
+
     private val _callListInfo = MutableLiveData<ResponseCallList>()
     val callListInfo: LiveData<ResponseCallList> = _callListInfo
+
+    private val _dispatchId = MutableLiveData<Int>()
+    val dispatchId: LiveData<Int> = _dispatchId
 
     /*
     "latitude": 37.5440261,
@@ -98,7 +104,8 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
             callRepository.postDispatch(callId)
         }.onSuccess {
             _dispatchSuccess.value = true
-            dispatchId = it.data.dispatchId
+            _dispatchId.value = it.data.dispatchId
+            Timber.d("set dispatch ID -> ${_dispatchId.value}")
             Timber.d("post-dispatch-success -> $it")
         }.onFailure {
             _dispatchSuccess.value = false
@@ -108,14 +115,33 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
 
     fun postDispatchArrive() = viewModelScope.launch {
         kotlin.runCatching {
-            Timber.d("dispatch Id -> $dispatchId")
-            callRepository.postDispatchArrive(dispatchId)
+            Timber.d("dispatch Id -> ${_dispatchId.value}")
+            callRepository.postDispatchArrive(_dispatchId.value!!)
         }.onSuccess {
             Timber.d("post-dispatch-arrive-success -> $it")
             _dispatchArriveSuccess.value = true
         }.onFailure {
             Timber.d("post-dispatch-arrive-fail -> $it")
             _dispatchArriveSuccess.value = false
+        }
+    }
+
+    fun postDispatchReport(dispatchId: Int, content: String) = viewModelScope.launch {
+        kotlin.runCatching {
+            Timber.d("report id -> ${dispatchId}")
+            Timber.d("content -> $content")
+            callRepository.postDispatchReport(
+                RequestDispatchReport(
+                    content = content,
+                    dispatchId = dispatchId,
+                ),
+            )
+        }.onSuccess {
+            Timber.d("post-dispatch-report-success -> $it")
+            _dispatchReportSuccess.value = true
+        }.onFailure {
+            Timber.d("post-dispatch-report-fail -> $it")
+            _dispatchReportSuccess.value = false
         }
     }
 }

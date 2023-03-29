@@ -1,5 +1,6 @@
 package com.example.cpr2u_android.data.datasource.call
 
+import com.example.cpr2u_android.data.model.request.RequestDispatchReport
 import com.example.cpr2u_android.data.model.request.education.RequestCall
 import com.example.cpr2u_android.data.model.response.auth.GeneralResponse
 import com.example.cpr2u_android.data.model.response.call.ResponseCall
@@ -12,4 +13,5 @@ interface CallDataSource {
     suspend fun getCallList(): ResponseCallList
     suspend fun postDispatch(callId: Int): ResponseDispatch
     suspend fun postDispatchArrived(dispatchId: Int): GeneralResponse
+    suspend fun postDispatchReport(data: RequestDispatchReport): GeneralResponse
 }

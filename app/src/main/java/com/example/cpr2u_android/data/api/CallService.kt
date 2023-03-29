@@ -1,5 +1,6 @@
 package com.example.cpr2u_android.data.api
 
+import com.example.cpr2u_android.data.model.request.RequestDispatchReport
 import com.example.cpr2u_android.data.model.request.education.RequestCall
 import com.example.cpr2u_android.data.model.response.auth.GeneralResponse
 import com.example.cpr2u_android.data.model.response.call.ResponseCall
@@ -33,5 +34,10 @@ interface CallService {
     @POST("/dispatch/arrive/{dispatch_id}")
     suspend fun postDispatchArrive(
         @Path("dispatch_id") dispatch_id: Int,
+    ): GeneralResponse
+
+    @POST("/dispatch/report")
+    suspend fun postDispatchReport(
+        @Body data: RequestDispatchReport,
     ): GeneralResponse
 }
