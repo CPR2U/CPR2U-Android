@@ -11,9 +11,13 @@ import com.example.cpr2u_android.R
 import com.example.cpr2u_android.presentation.MainActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import org.json.JSONObject
+import timber.log.Timber
 import java.util.*
 
 class FirebaseService : FirebaseMessagingService() {
+    private var intent = Intent(this, MainActivity::class.java)
+    var pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     override fun onNewToken(token: String) {
         Log.d("MyFcmService", "New token :: $token")
         sendTokenToServer(token)
@@ -30,7 +34,32 @@ class FirebaseService : FirebaseMessagingService() {
         Log.d("MyFcmService", "Notification Body :: ${remoteMessage.notification?.body}")
         Log.d("MyFcmService", "Notification Data :: ${remoteMessage.data}")
 
+        /*
+        D/MyFcmService: Notification Title :: CPR Angel의 출동이 필요합니다.
+        D/MyFcmService: Notification Body :: 서울 용산구 숙대 숙대
+        D/MyFcmService: Notification Data :: {type=1}
+         */
+
+        Log.d("FCM LOG", "From: ${remoteMessage.from}")
+
+        // Check if message contains a data payload.
+        if (remoteMessage.data.isNotEmpty()) {
+            Log.d("FCM LOG TYPE", "Message data payload: ${remoteMessage.data["type"]}")
+        }
+
+        val params: Map<String, String> = remoteMessage.data
+        val jsonObject = JSONObject(params)
+        Timber.tag("JSON OBJECT").e(jsonObject.toString())
+        // E/JSON OBJECT: {"type":"1"}
+        val type = jsonObject.getString("type")
+        if (type == "1") {
+            intent = Intent(this, MainActivity::class.java)
+            pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        }
+        Timber.d("JSON OBJECT Type -> $type")
+
         remoteMessage.notification?.let {
+            Timber.e("노티 누르고 이동 고고")
             showNotification(it)
         }
     }
@@ -46,8 +75,8 @@ class FirebaseService : FirebaseMessagingService() {
         데이터를 백그라운드, 포그라운드에서 모두 접근하여 활용하려면 서버측에서 전송 시 노티피케이션 부분을 제거하고 데이터만 포함하도록 해야한다.
          */
 
-        val intent = Intent(this, MainActivity::class.java)
-        val pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        intent = Intent(this, MainActivity::class.java)
+        pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         val channelId = "channelId"
 
