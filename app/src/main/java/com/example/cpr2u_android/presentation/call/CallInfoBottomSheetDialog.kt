@@ -60,7 +60,7 @@ class CallInfoBottomSheetDialog(val item: CallInfoBottomSheet) : BottomSheetDial
                             time = object : TimerTask() {
                                 override fun run() {
                                     updateTime()
-                                    if (timerSec >= 15) return
+                                    if (timerSec >= 300) return
                                     timerSec++
                                 }
                             }
