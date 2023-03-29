@@ -4,6 +4,7 @@ import com.example.cpr2u_android.data.api.CallService
 import com.example.cpr2u_android.data.model.request.education.RequestCall
 import com.example.cpr2u_android.data.model.response.auth.GeneralResponse
 import com.example.cpr2u_android.data.model.response.call.ResponseCall
+import com.example.cpr2u_android.data.model.response.call.ResponseCallList
 import timber.log.Timber
 
 class CallRemoteDataSource(private val callService: CallService) : CallDataSource {
@@ -14,5 +15,9 @@ class CallRemoteDataSource(private val callService: CallService) : CallDataSourc
     override suspend fun postCallEnd(callId: Int): GeneralResponse {
         Timber.d("data call Id -> $callId")
         return callService.postCallEnd(callId)
+    }
+
+    override suspend fun getCallList(): ResponseCallList {
+        return callService.getCallList()
     }
 }

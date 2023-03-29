@@ -67,4 +67,15 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
             Timber.d("post-call-end-fail $it")
         }
     }
+
+    fun getCallList() = viewModelScope.launch {
+        kotlin.runCatching {
+            callRepository.getCallList()
+        }.onSuccess {
+            Timber.d("get-call-list-success -> $it")
+            it.data.callList
+        }.onFailure {
+            Timber.d("get-call-list-fail -> $it")
+        }
+    }
 }
