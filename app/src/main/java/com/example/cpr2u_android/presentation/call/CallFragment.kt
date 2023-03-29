@@ -11,6 +11,7 @@ import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -25,18 +26,20 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.example.cpr2u_android.R
 import com.example.cpr2u_android.databinding.FragmentCallBinding
 import com.example.cpr2u_android.util.UiState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.* // ktlint-disable no-wildcard-imports
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
@@ -56,6 +59,7 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
     private lateinit var fadeIn: View
     private lateinit var fadeInAnim: Animation
     private lateinit var fadeInText: TextView
+    private lateinit var bell: ImageView
     private var timerStarted = false
     private var timeLeftInMillis = 0L
     private lateinit var countDownTimer: CountDownTimer
@@ -64,6 +68,12 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
     private var longitude by Delegates.notNull<Double>()
     private lateinit var address: Address
     private lateinit var fullAddress: String
+
+    private var timerSec: Int = 0
+    private var time: TimerTask? = null
+    private var timerText: TextView? = null
+    private val handler: Handler = Handler()
+    private lateinit var updater: Runnable
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
@@ -81,7 +91,7 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
         mapFragment.onCreate(savedInstanceState)
         mapFragment.getMapAsync(this)
 
-        val bell = view.findViewById<ImageView>(R.id.iv_bell)
+        bell = view.findViewById<ImageView>(R.id.iv_bell)
         progressBell = view.findViewById<ProgressBar>(R.id.progress_bar_bell)
         progressBell.visibility = View.GONE
 
@@ -92,12 +102,58 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
         progressBell.visibility = View.INVISIBLE
         fadeInText.visibility = View.INVISIBLE
 
+        countDownTimer = object : CountDownTimer(4000, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                Timber.d("onTick 호출...")
+                fadeIn.visibility = View.VISIBLE
+                progressBell.visibility = View.VISIBLE
+                fadeInText.visibility = View.VISIBLE
+                timeLeftInMillis = millisUntilFinished
+                val secondsLeft = timeLeftInMillis / 1000
+                fadeInText.text = secondsLeft.toString()
+            }
+
+            override fun onFinish() {
+                Timber.d("onFinish 호출")
+                fadeIn.visibility = View.INVISIBLE
+                progressBell.visibility = View.INVISIBLE
+                fadeInText.visibility = View.INVISIBLE
+                // TODO : 호출 서버통신
+                callViewModel.postCall(latitude, longitude, fullAddress)
+                callViewModel.callUIState.flowWithLifecycle(lifecycle).onEach {
+                    when (it) {
+                        is UiState.Success -> {
+                            Timber.d("post call success")
+                            val bundle =
+                                Bundle().apply { putInt("callId", callViewModel._callId) }
+                            Timber.d("####1 startAcitivy 합니다..")
+                            startActivity(
+                                Intent(
+                                    requireContext(),
+                                    CallingActivity::class.java,
+                                ).putExtras(bundle),
+                            )
+                            timerStarted = false
+                            resetTimer()
+                            return@onEach
+                        }
+                        else -> {
+                            Timber.d("로딩도 아니고.. 성공도 아니고.. ")
+                        }
+                    }
+                }.launchIn(lifecycleScope)
+            }
+        }
+
+
         bell.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     fadeIn.startAnimation(fadeInAnim)
                     fadeIn.setBackgroundColor(Color.parseColor("#42FF2F2F"))
-                    startTimer()
+                    countDownTimer.cancel()
+                    countDownTimer.start()
+                    timerStarted = true
                 }
 
                 MotionEvent.ACTION_UP -> {
@@ -106,6 +162,7 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
                     fadeInText.visibility = View.INVISIBLE
                     fadeIn.clearAnimation()
                     resetTimer()
+                    handler.removeCallbacks(updater)
                 }
             }
             true
@@ -186,48 +243,18 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
             )
         }
     }
-
     private fun startTimer() {
-        if (!timerStarted) {
-            countDownTimer = object : CountDownTimer(4000, 1000) {
-                override fun onTick(millisUntilFinished: Long) {
-                    fadeIn.visibility = View.VISIBLE
-                    progressBell.visibility = View.VISIBLE
-                    fadeInText.visibility = View.VISIBLE
-                    timeLeftInMillis = millisUntilFinished
-                    val secondsLeft = timeLeftInMillis / 1000
-                    fadeInText.text = secondsLeft.toString()
-                }
-
-                override fun onFinish() {
-                    fadeIn.visibility = View.INVISIBLE
-                    progressBell.visibility = View.INVISIBLE
-                    fadeInText.visibility = View.INVISIBLE
-                    // TODO : 호출 서버통신
-                    callViewModel.postCall(latitude, longitude, fullAddress)
-                    callViewModel.callUIState.flowWithLifecycle(lifecycle).onEach {
-                        when (it) {
-                            is UiState.Success -> {
-                                Timber.d("post call success")
-                                startActivity(Intent(requireContext(), CallingActivity::class.java))
-                            }
-                            else -> {}
-                        }
-                    }
-                }
-            }.start()
-
-            timerStarted = true
-        }
+        countDownTimer.cancel()
+        countDownTimer.start()
+        timerStarted = true
     }
 
     private fun resetTimer() {
-        if (timerStarted) {
-            countDownTimer.cancel()
-            timerStarted = false
-            timeLeftInMillis = 0L
-            fadeInText.text = "0"
-        }
+        timerSec = 0
+//        countDownTimer.cancel()
+        timerStarted = false
+        timeLeftInMillis = 0L
+        fadeInText.text = "0"
     }
 
     override fun onStart() {
@@ -244,6 +271,8 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
     override fun onResume() {
         super.onResume()
         mapFragment.onResume()
+        countDownTimer.cancel()
+        Timber.d("############resume")
     }
 
     override fun onDestroy() {

@@ -6,10 +6,11 @@ import android.view.View
 import com.example.cpr2u_android.R
 import com.example.cpr2u_android.databinding.FragmentEducationBinding
 import com.example.cpr2u_android.presentation.base.BaseFragment
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragment_education) {
-    private val educationViewModel: EducationViewModel by viewModel()
+    private val educationViewModel: EducationViewModel by sharedViewModel()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         educationViewModel.getUserInfo()

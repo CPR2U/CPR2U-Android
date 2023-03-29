@@ -9,7 +9,7 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface EducationService {
-    @POST("lectures/progress/")
+    @POST("education/lectures/progress")
     suspend fun postLectureProgress(
         @Query("lectureId") lectureId: Int,
     ): GeneralResponse
@@ -22,7 +22,7 @@ interface EducationService {
         @Body score: Int,
     ): GeneralResponse
 
-    @POST("/education/exercises/progress")
+    @POST("education/exercises/progress")
     suspend fun postExercisesProgress(
         @Body score: Int,
     ): GeneralResponse

@@ -51,7 +51,13 @@ class LectureActivity : BaseActivity<ActivityLectureBinding>(R.layout.activity_l
                             dialog.dismiss()
                             finish()
                         }
-                        else -> {}
+                        is UiState.Loading -> {
+                            Timber.d("로딩중...")
+                        }
+                        else -> {
+                            Timber.d("fail -> $it")
+                            Timber.d("dialog-fail")
+                        }
                     }
                 }.launchIn(lifecycleScope)
             }
