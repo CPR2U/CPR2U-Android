@@ -16,8 +16,6 @@ import timber.log.Timber
 import java.util.*
 
 class FirebaseService : FirebaseMessagingService() {
-    private var intent = Intent(this, MainActivity::class.java)
-    var pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     override fun onNewToken(token: String) {
         Log.d("MyFcmService", "New token :: $token")
         sendTokenToServer(token)
@@ -53,8 +51,8 @@ class FirebaseService : FirebaseMessagingService() {
         // E/JSON OBJECT: {"type":"1"}
         val type = jsonObject.getString("type")
         if (type == "1") {
-            intent = Intent(this, MainActivity::class.java)
-            pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val intent = Intent(this, MainActivity::class.java)
+            val pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         }
         Timber.d("JSON OBJECT Type -> $type")
 
@@ -75,8 +73,8 @@ class FirebaseService : FirebaseMessagingService() {
         데이터를 백그라운드, 포그라운드에서 모두 접근하여 활용하려면 서버측에서 전송 시 노티피케이션 부분을 제거하고 데이터만 포함하도록 해야한다.
          */
 
-        intent = Intent(this, MainActivity::class.java)
-        pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val intent = Intent(this, MainActivity::class.java)
+        val pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         val channelId = "channelId"
 

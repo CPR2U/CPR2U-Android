@@ -35,6 +35,7 @@ class LoginPhoneNumberFragment :
                 signInViewModel.setPhoneNumber(phoneNumber)
                 signInViewModel.postVerification(phoneNumber)
                 signInViewModel.validationCode.observe(viewLifecycleOwner) {
+
                     Timber.d("signIn ViewModel V C -> ${signInViewModel.getValidationCode()}")
                     bundle = Bundle().apply {
                         putString("phoneNumber", binding.etNumber.text.toString())

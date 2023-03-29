@@ -28,7 +28,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.example.cpr2u_android.R
+import com.example.cpr2u_android.data.model.response.call.ResponseCallList
 import com.example.cpr2u_android.databinding.FragmentCallBinding
+import com.example.cpr2u_android.domain.model.CallInfoBottomSheet
 import com.example.cpr2u_android.util.UiState
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationListener
@@ -39,6 +41,7 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
+import com.google.maps.android.SphericalUtil
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -145,7 +148,6 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
             }
         }
 
-
         bell.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -242,7 +244,67 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
                 LOCATION_PERMISSION_REQUEST_CODE,
             )
         }
+
+        callViewModel.getCallList()
+        lateinit var callList: ResponseCallList
+        callViewModel.callListInfo.observe(viewLifecycleOwner) {
+            callList = it
+            val listNum = it.data.callList.size
+            for (i in 0 until listNum) {
+                val nLatitude = it.data.callList[i].latitude
+                val nLongitude = it.data.callList[i].longitude
+                val nMarkerOptions = MarkerOptions().apply {
+                    position(LatLng(nLatitude, nLongitude))
+                    title("${it.data.callList[i].cprCallId}")
+                }
+                mMap.addMarker(nMarkerOptions)
+            }
+        }
+
+        // 바텀 시트 init
+
+        // 지도를 클릭하면 BottomSheet를 숨김
+        mMap.setOnMapClickListener {
+//            hideBottomSheet()
+        }
+
+        // 마커를 클릭하면 BottomSheet를 띄움
+        mMap.setOnMarkerClickListener { marker ->
+//            showBottomSheet(marker)
+            Timber.d("위치 -----> ${marker.position.latitude}")
+            Timber.d("CALL ID -> ${marker.title}")
+            if (marker.title != "Current Location") {
+//                bottomSheetDialog.show()
+                val distance = SphericalUtil.computeDistanceBetween(
+                    LatLng(latitude, longitude),
+                    LatLng(marker.position.latitude, marker.position.longitude),
+                )
+                var distanceStr = ""
+                distanceStr = if (distance < 1000) {
+                    String.format("%.2f", distance) + "m"
+                } else {
+                    String.format("%.2f", distance / 1000) + "km"
+                }
+                val duration =
+                    if (distance / 100 < 1) "1" else String.format("%.0f", distance / 100)
+                val address = callList.data.callList.find {
+                    it.cprCallId.toString() == marker.title
+                }
+                Timber.d("address -> $address")
+                val productInfoFragment = CallInfoBottomSheetDialog(
+                    CallInfoBottomSheet(
+                        callId = marker.title!!.toInt(),
+                        distance = distanceStr,
+                        duration = duration,
+                        fullAddress = address!!.fullAddress,
+                    ),
+                )
+                productInfoFragment.show(requireFragmentManager(), "TAG")
+            }
+            true
+        }
     }
+
     private fun startTimer() {
         countDownTimer.cancel()
         countDownTimer.start()
