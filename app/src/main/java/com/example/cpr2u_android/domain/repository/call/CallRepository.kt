@@ -11,4 +11,5 @@ interface CallRepository {
     suspend fun postCallEnd(callId: Int): GeneralResponse
     suspend fun getCallList(): ResponseCallList
     suspend fun postDispatch(callID: Int): ResponseDispatch
+    suspend fun postDispatchArrive(dispatchId: Int):GeneralResponse
 }

@@ -24,4 +24,8 @@ class CallRepositoryImpl(private val callDataSource: CallDataSource): CallReposi
     override suspend fun postDispatch(callID: Int): ResponseDispatch {
         return callDataSource.postDispatch(callID)
     }
+
+    override suspend fun postDispatchArrive(dispatchId: Int): GeneralResponse {
+        return callDataSource.postDispatchArrived(dispatchId)
+    }
 }

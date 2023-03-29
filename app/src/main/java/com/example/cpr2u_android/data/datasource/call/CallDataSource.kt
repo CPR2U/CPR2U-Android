@@ -11,4 +11,5 @@ interface CallDataSource {
     suspend fun postCallEnd(callId: Int): GeneralResponse
     suspend fun getCallList(): ResponseCallList
     suspend fun postDispatch(callId: Int): ResponseDispatch
+    suspend fun postDispatchArrived(dispatchId: Int): GeneralResponse
 }

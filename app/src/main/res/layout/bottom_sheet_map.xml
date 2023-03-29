@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="map_info"
             type="com.example.cpr2u_android.domain.model.CallInfoBottomSheet" />
@@ -42,9 +43,9 @@
                 android:layout_marginVertical="12dp"
                 android:layout_marginStart="8dp"
                 android:fontFamily="@font/notosans_regular"
+                android:text="@{map_info.fullAddress}"
                 android:textColor="@color/black"
                 android:textSize="16sp"
-                android:text="@{map_info.fullAddress}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/iv_location"
                 app:layout_constraintTop_toTopOf="parent"
@@ -52,7 +53,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_mark_info"
+            android:id="@+id/cl_marker_info"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginHorizontal="8dp"
@@ -160,6 +161,49 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_timer"
+            android:layout_width="match_parent"
+            android:layout_height="108dp"
+            android:layout_marginHorizontal="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/rectangle_border_gray_radius_6dp"
+            app:layout_constraintTop_toBottomOf="@id/cl_location">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/iv_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_time_circle"
+                    app:layout_constraintBottom_toBottomOf="@id/tv_minute"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/tv_minute" />
+
+                <TextView
+                    android:id="@+id/tv_minute"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:fontFamily="@font/notosans_bold"
+                    android:includeFontPadding="false"
+                    android:text="00 : 00"
+                    android:textColor="@color/main_red"
+                    android:textSize="48sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/iv_time"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <TextView
             android:id="@+id/tv_dispatch"
             android:layout_width="match_parent"
@@ -173,7 +217,7 @@
             android:text="DISPATCH"
             android:textColor="@color/white"
             android:textSize="18sp"
-            app:layout_constraintTop_toBottomOf="@id/cl_mark_info" />
+            app:layout_constraintTop_toBottomOf="@id/cl_marker_info" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

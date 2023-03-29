@@ -16,6 +16,7 @@ import timber.log.Timber
 class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
 
     var _callId = -1
+    var dispatchId = -1
     private val _callUIState = MutableStateFlow<UiState<Boolean>>(UiState.Loading)
     val callUIState: StateFlow<UiState<Boolean>> = _callUIState
 
@@ -27,6 +28,9 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
 
     private val _dispatchSuccess = MutableLiveData<Boolean>()
     val dispatchSuccess: LiveData<Boolean> = _dispatchSuccess
+
+    private val _dispatchArriveSuccess = MutableLiveData<Boolean>()
+    val dispatchArriveSuccess: LiveData<Boolean> = _dispatchArriveSuccess
 
     private val _callListInfo = MutableLiveData<ResponseCallList>()
     val callListInfo: LiveData<ResponseCallList> = _callListInfo
@@ -93,9 +97,25 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
             Timber.d("dispatch call id -> $callId")
             callRepository.postDispatch(callId)
         }.onSuccess {
+            _dispatchSuccess.value = true
+            dispatchId = it.data.dispatchId
             Timber.d("post-dispatch-success -> $it")
         }.onFailure {
+            _dispatchSuccess.value = false
             Timber.d("post-dispatch-fail -> $it")
+        }
+    }
+
+    fun postDispatchArrive() = viewModelScope.launch {
+        kotlin.runCatching {
+            Timber.d("dispatch Id -> $dispatchId")
+            callRepository.postDispatchArrive(dispatchId)
+        }.onSuccess {
+            Timber.d("post-dispatch-arrive-success -> $it")
+            _dispatchArriveSuccess.value = true
+        }.onFailure {
+            Timber.d("post-dispatch-arrive-fail -> $it")
+            _dispatchArriveSuccess.value = false
         }
     }
 }

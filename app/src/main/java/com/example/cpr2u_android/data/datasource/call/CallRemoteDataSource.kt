@@ -25,4 +25,8 @@ class CallRemoteDataSource(private val callService: CallService) : CallDataSourc
     override suspend fun postDispatch(callId: Int): ResponseDispatch {
         return callService.postDispatch(callId)
     }
+
+    override suspend fun postDispatchArrived(dispatchId: Int): GeneralResponse {
+        return callService.postDispatchArrive(dispatchId)
+    }
 }

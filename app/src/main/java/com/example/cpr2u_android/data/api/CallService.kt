@@ -29,4 +29,9 @@ interface CallService {
     suspend fun postDispatch(
         @Body cpr_call_id: Int,
     ): ResponseDispatch
+
+    @POST("/dispatch/arrive/{dispatch_id}")
+    suspend fun postDispatchArrive(
+        @Path("dispatch_id") dispatch_id: Int,
+    ): GeneralResponse
 }
