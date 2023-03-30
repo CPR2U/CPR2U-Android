@@ -17,20 +17,38 @@ import com.example.cpr2u_android.presentation.base.BaseFragment
 import com.example.cpr2u_android.util.UiState
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import timber.log.Timber
 
 class PosePractice3Fragment :
     BaseFragment<FragmentPosePractice3Binding>(R.layout.fragment_pose_practice_3) {
-    private val educationViewModel: EducationViewModel by viewModel()
+    private val educationViewModel: EducationViewModel by sharedViewModel()
     private lateinit var callback: OnBackPressedCallback
+    var isPassed = true
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val score = 80
+        binding.tvCompressionResult.text = educationViewModel.compressionRate.title
+        binding.tvCompressionRateDesc.text = educationViewModel.compressionRate.desc
+
+        binding.tvArmResult.text = educationViewModel.armAngle.title
+        binding.tvArmDesc.text = educationViewModel.armAngle.desc
+
+        binding.tvPressResult.text = educationViewModel.pressDepth.title
+        binding.tvPressDesc.text = educationViewModel.pressDepth.desc
+
+        binding.tvPercentNum.text = educationViewModel.postPracticeScore.toString()
+
+        if (educationViewModel.postPracticeScore > 80) {
+            isPassed = true
+            binding.tvPassed.text = "PASSED"
+        } else {
+            isPassed = false
+            binding.tvPassed.text = "FAILED"
+        }
 
         binding.btnQuit.setOnClickListener {
-            if (score >= 80) {
+            if (isPassed) {
                 // 성공
                 val dialog = Dialog(requireContext())
                 val binding = DataBindingUtil.inflate<DialogQuizBinding>(
@@ -46,7 +64,6 @@ class PosePractice3Fragment :
 
                 binding.buttonFinish.setOnClickListener {
                     educationViewModel.postExercisesProgress()
-                    Timber.d("들어오니....")
                     educationViewModel.exercisesProgressUIState.flowWithLifecycle(lifecycle)
                         .onEach {
                             when (it) {

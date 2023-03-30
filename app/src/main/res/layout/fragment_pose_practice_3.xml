@@ -69,14 +69,13 @@
                         app:layout_constraintTop_toTopOf="@id/iv_compression_flame" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-
                 <TextView
-                    android:id="@+id/tv_compression_subtitle"
+                    android:id="@+id/tv_compression_result"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/notosans_bold"
+                    android:text="0.5 per 1 time"
                     android:layout_marginTop="11dp"
-                    android:fontFamily="@font/notosans_regular"
-                    android:text="Average Compression Rate"
                     android:textColor="@color/black"
                     android:textSize="14sp"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -84,18 +83,7 @@
                     app:layout_constraintTop_toBottomOf="@id/cl_compression_title" />
 
                 <TextView
-                    android:id="@+id/tv_compression_average"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/notosans_bold"
-                    android:text="0.5 per 1 time"
-                    android:textColor="@color/black"
-                    android:textSize="14sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/tv_compression_subtitle" />
-
-                <TextView
+                    android:id="@+id/tv_compression_rate_desc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/notosans_regular"
@@ -104,7 +92,7 @@
                     android:textSize="14sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/tv_compression_average" />
+                    app:layout_constraintTop_toBottomOf="@id/tv_compression_result" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -153,7 +141,7 @@
 
 
                 <TextView
-                    android:id="@+id/tv_hand_subtitle"
+                    android:id="@+id/tv_hand_result"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="11dp"
@@ -166,7 +154,7 @@
                     app:layout_constraintTop_toBottomOf="@id/cl_hand_title" />
 
                 <TextView
-                    android:id="@+id/tv_hand_average"
+                    android:id="@+id/tv_hand_desc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/notosans_regular"
@@ -175,7 +163,7 @@
                     android:textSize="14sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/tv_hand_subtitle" />
+                    app:layout_constraintTop_toBottomOf="@id/tv_hand_result" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -238,7 +226,7 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <TextView
-                    android:id="@+id/tv_press_subtitle"
+                    android:id="@+id/tv_press_result"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="11dp"
@@ -251,7 +239,7 @@
                     app:layout_constraintTop_toBottomOf="@id/cl_press_title" />
 
                 <TextView
-                    android:id="@+id/tv_press_average"
+                    android:id="@+id/tv_press_desc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/notosans_regular"
@@ -260,7 +248,7 @@
                     android:textSize="14sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/tv_press_subtitle" />
+                    app:layout_constraintTop_toBottomOf="@id/tv_press_result" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -308,7 +296,7 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <TextView
-                    android:id="@+id/tv_arm_subtitle"
+                    android:id="@+id/tv_arm_result"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="11dp"
@@ -321,7 +309,7 @@
                     app:layout_constraintTop_toBottomOf="@id/cl_arm_title" />
 
                 <TextView
-                    android:id="@+id/tv_arm_average"
+                    android:id="@+id/tv_arm_desc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/notosans_regular"
@@ -330,7 +318,7 @@
                     android:textSize="14sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/tv_arm_subtitle" />
+                    app:layout_constraintTop_toBottomOf="@id/tv_arm_result" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -363,7 +351,7 @@
                 android:fontFamily="@font/notosans_bold"
                 android:includeFontPadding="false"
                 android:paddingEnd="55dp"
-                android:text="Accuracy"
+                android:text="SCORE"
                 android:textColor="@color/black"
                 android:textSize="24sp"
                 app:layout_constraintBottom_toBottomOf="@id/iv_accuracy_hand"
@@ -391,28 +379,15 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="22dp"
-                    android:fontFamily="@font/notosans_bold"
-                    android:includeFontPadding="false"
-                    android:text="%"
-                    android:textColor="@color/black"
-                    android:textSize="40sp"
-                    app:layout_constraintBottom_toBottomOf="@id/tv_percent_num"
-                    app:layout_constraintStart_toEndOf="@id/tv_percent_num"
-                    app:layout_constraintTop_toTopOf="@id/tv_percent_num" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
 
             <TextView
+                android:id="@+id/tv_passed"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="36dp"
                 android:fontFamily="@font/notosans_bold"
-                android:paddingBottom="17dp"
                 android:text="PASSED!"
                 android:textColor="@color/black"
                 android:textSize="24sp"

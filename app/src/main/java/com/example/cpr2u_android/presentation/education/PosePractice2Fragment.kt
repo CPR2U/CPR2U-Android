@@ -29,11 +29,12 @@ import com.example.cpr2u_android.ml.ml.MoveNet
 import com.example.cpr2u_android.presentation.base.BaseFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import timber.log.Timber
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import java.util.*
 
 class PosePractice2Fragment :
     BaseFragment<FragmentPosePractice2Binding>(R.layout.fragment_pose_practice_2) {
+    private val educationViewModel: EducationViewModel by sharedViewModel()
 
     companion object {
         private const val FRAGMENT_DIALOG = "dialog"
@@ -41,7 +42,7 @@ class PosePractice2Fragment :
 
     private lateinit var surfaceView: SurfaceView
     private var modelPos = 1 // 1 == MoveNet Thunder model
-    private var device = Device.GPU
+    private var device = Device.CPU
     private lateinit var tvScore: TextView
     private var cameraSource: CameraSource? = null
 
@@ -53,6 +54,11 @@ class PosePractice2Fragment :
     private var beforeWrist = 0f
     private var increased = true
     private var wristList = arrayListOf<Float>()
+
+    var correctAngle: Int = 0
+    var incorrectAngle: Int = 0
+    var compressionRate: Int = 0
+    var pressDepth: Int = 0
 
     private val TAG = "CPR2U"
 
@@ -101,8 +107,12 @@ class PosePractice2Fragment :
                 updateTime()
                 if (timerSec >= 15) {
                     view.post {
+                        educationViewModel.armAngle = calculateArmAngle()
+                        educationViewModel.compressionRate = calculateCompressionRate()
+                        educationViewModel.pressDepth = calculatePressDepth()
+                        educationViewModel.postPracticeScore =
+                            educationViewModel.armAngle.score + educationViewModel.compressionRate.score + educationViewModel.pressDepth.score
                         findNavController().navigate(R.id.action_posePractice2Fragment_to_posePractice3Fragment)
-                        Timber.d("에에..")
                     }
                     return
                 }
@@ -154,8 +164,6 @@ class PosePractice2Fragment :
 
     // open camera
     private fun openCamera() {
-        val display = activity?.windowManager?.defaultDisplay // in case of Activity
-/* val display = activity!!.windowManaver.defaultDisplay */ // in case of Fragment
         if (isCameraPermissionGranted()) {
             if (cameraSource == null) {
                 cameraSource =
@@ -174,8 +182,6 @@ class PosePractice2Fragment :
                                 // tvScore: 자세 인식 모델의 정확도 점수
                                 tvScore.text =
                                     getString(R.string.tfe_pe_tv_score, personScore ?: 0f)
-                                Timber.d("TV SCORE -> $personScore")
-
                                 /**
                                  * TODO: 여기서부터 CPR 자세 인식 코드 시작
                                  * persons에 더 많은 person 데이터가 있을 수록 정확도가 높아진다.
@@ -225,12 +231,16 @@ class PosePractice2Fragment :
             }
         }
 
-        // 어깨, 팔꿈치, 손목이 일직선인지 x 값으로 확인한다. (약간의 노이즈 발생으로 인해 10의 여유를 둠)
-        var isCorrect = xShoulder - xElbow < 10 && xElbow - xWrist < 10
+        // 일직선 판별
+        var isCorrect = xShoulder - xElbow < 20 && xElbow - xWrist < 20
         if (isCorrect) {
             Log.i(TAG, "올바른 자세에요!")
+            // TODO : 맞은 횟수 세기
+            correctAngle++
         } else {
             Log.i(TAG, "팔을 90도로 유지하세요!")
+            // TODO : 틀린 횟수 세기
+            incorrectAngle++
         }
 
         // 손목의 높이가 상승 곡선에서 꼭짓점을 찍고 하강하는 경우
@@ -243,24 +253,50 @@ class PosePractice2Fragment :
             increased = true
             minHeight = yWrist
 
-            // wristList에 ${손목의 최대 높이 - 손목의 최소 높이}를 저장
-            wristList.add(maxHeight - minHeight)
-            Log.e(TAG, "wristList : $wristList")
-            // wristList에 저장된 깊이 값으로 CPR 깊이가 적절한지 확인한다.
-            // wristList에 저장된 값의 개수로 CPR 속도(2분 동안 CPR한 횟수)가 적절한지 확인한다.
-            //  가슴압박 속도는 분당 100~120회, 깊이는 5~6㎝로 빠르고 깊게 30회 압박
-            // 2분 -> 200~240회 : 추후 1분당 평균 내는것도 나쁘지 않을듯
-
-            Log.i(TAG, "현재 손목 깊이: ${maxHeight - minHeight}, max: $maxHeight, min: $minHeight")
-        }
-
-        if (increased) {
-            Log.i("CPR2U", "손목이 상승 중입니다.")
-        } else {
-            Log.i(TAG, "손목이 하강 중입니다.")
+            val num = if (maxHeight > minHeight) maxHeight - minHeight else minHeight - maxHeight
+            wristList.add(num)
+            Log.e(TAG, "${wristList.last()}")
         }
 
         beforeWrist = yWrist
+    }
+
+    private fun calculateCompressionRate(): ResultMsg {
+        return when (wristList.size) {
+            in 190..250 -> ResultMsg(50, "adequate", "Good job! Very Adequate")
+            in 170 until 190 -> ResultMsg(35, "slow", "It's slow. Press more faster")
+            in 250 until 270 -> ResultMsg(35, "fast", "It's fast. Press more slower")
+            in 270..999999 -> ResultMsg(20, "tooFast", "It's too fast. Press slower")
+            in 100 until 170 -> ResultMsg(20, "tooSlow", "It's too slow. Press faster")
+            else -> ResultMsg(0, "wrong", "Something went wrong. Try Again")
+        }
+    }
+
+    // 팔 각도
+    private fun calculateArmAngle(): ResultMsg {
+        val total: Double = (correctAngle + incorrectAngle).toDouble()
+        if (total < 100) return ResultMsg(0, "wrong", "Something went wrong. Try Again")
+        return when (total) {
+            in total * 0.7..total -> ResultMsg(50, "adequate", "Good job! Very Nice angle!")
+            in total * 0.6..total * 0.7 -> ResultMsg(35, "almost", "Almost there. Try again")
+            in total * 0.5..total * 0.6 -> ResultMsg(20, "notGood", "Pay more attention to the angle of your arms",)
+            else -> ResultMsg(5, "bad", "You need some more practice")
+        }
+    }
+
+    // 압박 깊이
+    private fun calculatePressDepth(): ResultMsg {
+        var total = 0.0
+        wristList.forEach {
+            total += it
+        }
+        return when (total / wristList.size) {
+            in 18.0..30.0 -> ResultMsg(50, "adequate", "Good job! Very adequate!")
+            in 5.0..18.0 -> ResultMsg(15, "shallow", "Press little deeper")
+            in 0.0..5.0 -> ResultMsg(5, "tooShallow", "It's too shallow. Press deeply")
+            in 30.0..100.0 -> ResultMsg(15, "deep", "Press slight")
+            else -> ResultMsg(0, "wrong", "Something went wrong. Try Again")
+        }
     }
 
     // 자세 추정 모델 실행 (Movenet Thunder, CPU가 적절)
@@ -332,3 +368,5 @@ class PosePractice2Fragment :
         }
     }
 }
+
+data class ResultMsg(val score: Int, val title: String, val desc: String)
