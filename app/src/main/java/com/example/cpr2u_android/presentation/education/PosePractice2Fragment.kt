@@ -29,11 +29,12 @@ import com.example.cpr2u_android.ml.ml.MoveNet
 import com.example.cpr2u_android.presentation.base.BaseFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import timber.log.Timber
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import java.util.*
 
 class PosePractice2Fragment :
     BaseFragment<FragmentPosePractice2Binding>(R.layout.fragment_pose_practice_2) {
+    private val educationViewModel: EducationViewModel by sharedViewModel()
 
     companion object {
         private const val FRAGMENT_DIALOG = "dialog"
@@ -41,7 +42,7 @@ class PosePractice2Fragment :
 
     private lateinit var surfaceView: SurfaceView
     private var modelPos = 1 // 1 == MoveNet Thunder model
-    private var device = Device.GPU
+    private var device = Device.CPU
     private lateinit var tvScore: TextView
     private var cameraSource: CameraSource? = null
 
@@ -106,12 +107,12 @@ class PosePractice2Fragment :
                 updateTime()
                 if (timerSec >= 15) {
                     view.post {
-                        val a = calculateArmAngle()
-                        val b = calculateCompressionRate()
-                        Timber.d("a -> $a")
-                        Timber.d("b -> $b")
+                        educationViewModel.armAngle = calculateArmAngle()
+                        educationViewModel.compressionRate = calculateCompressionRate()
+                        educationViewModel.pressDepth = calculatePressDepth()
+                        educationViewModel.postPracticeScore =
+                            educationViewModel.armAngle.score + educationViewModel.compressionRate.score + educationViewModel.pressDepth.score
                         findNavController().navigate(R.id.action_posePractice2Fragment_to_posePractice3Fragment)
-                        Timber.d("에에..")
                     }
                     return
                 }
@@ -163,8 +164,6 @@ class PosePractice2Fragment :
 
     // open camera
     private fun openCamera() {
-        val display = activity?.windowManager?.defaultDisplay // in case of Activity
-/* val display = activity!!.windowManaver.defaultDisplay */ // in case of Fragment
         if (isCameraPermissionGranted()) {
             if (cameraSource == null) {
                 cameraSource =
@@ -183,8 +182,6 @@ class PosePractice2Fragment :
                                 // tvScore: 자세 인식 모델의 정확도 점수
                                 tvScore.text =
                                     getString(R.string.tfe_pe_tv_score, personScore ?: 0f)
-                                Timber.d("TV SCORE -> $personScore")
-
                                 /**
                                  * TODO: 여기서부터 CPR 자세 인식 코드 시작
                                  * persons에 더 많은 person 데이터가 있을 수록 정확도가 높아진다.
@@ -255,38 +252,50 @@ class PosePractice2Fragment :
         else if (!increased && beforeWrist < yWrist - 1) {
             increased = true
             minHeight = yWrist
-            wristList.add(maxHeight - minHeight)
-            Log.e(TAG, "wristList : $wristList")
-            Log.i(TAG, "현재 손목 깊이: ${maxHeight - minHeight}, max: $maxHeight, min: $minHeight")
-        }
 
-        if (increased) {
-            Log.i("CPR2U", "손목이 상승 중입니다.")
-        } else {
-            Log.i(TAG, "손목이 하강 중입니다.")
+            val num = if (maxHeight > minHeight) maxHeight - minHeight else minHeight - maxHeight
+            wristList.add(num)
+            Log.e(TAG, "${wristList.last()}")
         }
 
         beforeWrist = yWrist
     }
 
-    private fun calculateCompressionRate(): String {
+    private fun calculateCompressionRate(): ResultMsg {
         return when (wristList.size) {
-            in 190..250 -> "adequate"
-            in 170 until 190 -> "slow"
-            in 250 until 270 -> "fast"
-            in 270..999999 -> "tooFast"
-            else -> "wrong"
+            in 190..250 -> ResultMsg(50, "adequate", "Good job! Very Adequate")
+            in 170 until 190 -> ResultMsg(35, "slow", "It's slow. Press more faster")
+            in 250 until 270 -> ResultMsg(35, "fast", "It's fast. Press more slower")
+            in 270..999999 -> ResultMsg(20, "tooFast", "It's too fast. Press slower")
+            in 100 until 170 -> ResultMsg(20, "tooSlow", "It's too slow. Press faster")
+            else -> ResultMsg(0, "wrong", "Something went wrong. Try Again")
         }
     }
 
-    private fun calculateArmAngle(): String {
+    // 팔 각도
+    private fun calculateArmAngle(): ResultMsg {
         val total: Double = (correctAngle + incorrectAngle).toDouble()
-        if (total < 100) return "wrong"
+        if (total < 100) return ResultMsg(0, "wrong", "Something went wrong. Try Again")
         return when (total) {
-            in total * 0.7..total -> "adequate"
-            in total * 0.6..total * 0.7 -> "almost"
-            in total * 0.5..total * 0.6 -> "notGood"
-            else -> "bad"
+            in total * 0.7..total -> ResultMsg(50, "adequate", "Good job! Very Nice angle!")
+            in total * 0.6..total * 0.7 -> ResultMsg(35, "almost", "Almost there. Try again")
+            in total * 0.5..total * 0.6 -> ResultMsg(20, "notGood", "Pay more attention to the angle of your arms",)
+            else -> ResultMsg(5, "bad", "You need some more practice")
+        }
+    }
+
+    // 압박 깊이
+    private fun calculatePressDepth(): ResultMsg {
+        var total = 0.0
+        wristList.forEach {
+            total += it
+        }
+        return when (total / wristList.size) {
+            in 18.0..30.0 -> ResultMsg(50, "adequate", "Good job! Very adequate!")
+            in 5.0..18.0 -> ResultMsg(15, "shallow", "Press little deeper")
+            in 0.0..5.0 -> ResultMsg(5, "tooShallow", "It's too shallow. Press deeply")
+            in 30.0..100.0 -> ResultMsg(15, "deep", "Press slight")
+            else -> ResultMsg(0, "wrong", "Something went wrong. Try Again")
         }
     }
 
@@ -359,3 +368,5 @@ class PosePractice2Fragment :
         }
     }
 }
+
+data class ResultMsg(val score: Int, val title: String, val desc: String)

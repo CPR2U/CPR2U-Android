@@ -37,6 +37,11 @@ class EducationViewModel(private val educationRepository: EducationRepository) :
     var index: Int = 0
     var correctCount: Int = 0
 
+    var armAngle: ResultMsg = ResultMsg(-1, "", "")
+    var compressionRate: ResultMsg = ResultMsg(-1, "", "")
+    var pressDepth: ResultMsg = ResultMsg(-1, "", "")
+    var postPracticeScore: Int = -1
+
     var _userInfo = MutableLiveData<UserInfo>()
 
     //    var _userInfo = MutableLiveData<UserInfo>(-1,-1, -1, -1, -1, "", "", -1.0)
