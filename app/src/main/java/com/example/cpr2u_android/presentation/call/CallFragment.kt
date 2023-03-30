@@ -106,6 +106,32 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap
         progressBell.visibility = View.INVISIBLE
         fadeInText.visibility = View.INVISIBLE
 
+        initTimer()
+
+        bell.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    fadeIn.startAnimation(fadeInAnim)
+                    fadeIn.setBackgroundColor(Color.parseColor("#42FF2F2F"))
+                    startTimer()
+                    return@setOnTouchListener true
+                }
+
+                MotionEvent.ACTION_UP -> {
+                    fadeIn.visibility = View.INVISIBLE
+                    progressBell.visibility = View.INVISIBLE
+                    fadeInText.visibility = View.INVISIBLE
+                    fadeIn.clearAnimation()
+                    resetTimer()
+                }
+            }
+            true
+        }
+        return view
+    }
+
+    private fun initTimer() {
+        Timber.d("#### init Timer")
         countDownTimer = object : CountDownTimer(4000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 Timber.d("onTick 호출...")
@@ -138,7 +164,9 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap
                                 ).putExtras(bundle),
                             )
                             timerStarted = false
+                            callViewModel.setCallUiState()
                             resetTimer()
+                            initTimer()
                             return@onEach
                         }
                         else -> {
@@ -148,29 +176,6 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap
                 }.launchIn(lifecycleScope)
             }
         }
-
-        bell.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    fadeIn.startAnimation(fadeInAnim)
-                    fadeIn.setBackgroundColor(Color.parseColor("#42FF2F2F"))
-                    countDownTimer.cancel()
-                    countDownTimer.start()
-                    timerStarted = true
-                }
-
-                MotionEvent.ACTION_UP -> {
-                    fadeIn.visibility = View.INVISIBLE
-                    progressBell.visibility = View.INVISIBLE
-                    fadeInText.visibility = View.INVISIBLE
-                    fadeIn.clearAnimation()
-                    resetTimer()
-                    handler.removeCallbacks(updater)
-                }
-            }
-            true
-        }
-        return view
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -264,20 +269,11 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap
             }
         }
 
-        // 바텀 시트 init
-
-        // 지도를 클릭하면 BottomSheet를 숨김
-        mMap.setOnMapClickListener {
-//            hideBottomSheet()
-        }
-
         // 마커를 클릭하면 BottomSheet를 띄움
         mMap.setOnMarkerClickListener { marker ->
-//            showBottomSheet(marker)
             Timber.d("위치 -----> ${marker.position.latitude}")
             Timber.d("CALL ID -> ${marker.title}")
             if (marker.title != "Current Location") {
-//                bottomSheetDialog.show()
                 val distance = SphericalUtil.computeDistanceBetween(
                     LatLng(latitude, longitude),
                     LatLng(marker.position.latitude, marker.position.longitude),
@@ -316,7 +312,7 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap
 
     private fun resetTimer() {
         timerSec = 0
-//        countDownTimer.cancel()
+        countDownTimer.cancel()
         timerStarted = false
         timeLeftInMillis = 0L
         fadeInText.text = "0"
@@ -335,7 +331,8 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap
 
     override fun onResume() {
         super.onResume()
-        mapFragment.onResume()
+//        mapFragment.onResume()
+        initTimer()
         countDownTimer.cancel()
         Timber.d("############resume")
     }

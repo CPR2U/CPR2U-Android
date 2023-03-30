@@ -69,6 +69,12 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
         }
     }
 
+    fun setCallUiState() = viewModelScope.launch {
+        kotlin.runCatching {
+            _callUIState.emit(UiState.Loading)
+        }
+    }
+
     fun postCallEnd(callId: Int) = viewModelScope.launch {
         kotlin.runCatching {
             _callEndUIState.emit(UiState.Loading)
@@ -128,7 +134,7 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
 
     fun postDispatchReport(dispatchId: Int, content: String) = viewModelScope.launch {
         kotlin.runCatching {
-            Timber.d("report id -> ${dispatchId}")
+            Timber.d("report id -> $dispatchId")
             Timber.d("content -> $content")
             callRepository.postDispatchReport(
                 RequestDispatchReport(
