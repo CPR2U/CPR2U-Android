@@ -18,6 +18,8 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         initSplash()
 
+        Timber.d("access token -> ${CPR2USharedPreference.getAccessToken()}")
+        Timber.d("device token -> ${CPR2USharedPreference.getDeviceToken()}")
         setContentView(R.layout.activity_splash)
     }
 

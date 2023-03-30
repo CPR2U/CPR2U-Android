@@ -43,14 +43,14 @@ class EducationViewModel(private val educationRepository: EducationRepository) :
     var userInfo: LiveData<UserInfo> = _userInfo
     fun postLectureId() = viewModelScope.launch {
         kotlin.runCatching {
-            _testUIState.emit(UiState.Loading)
+//            _testUIState.emit(UiState.Loading)
             educationRepository.postLectureId(1)
         }.onSuccess {
-            _testUIState.emit(UiState.Success(true))
             Timber.d("post-lecture-id-success $it")
+            _testUIState.emit(UiState.Success(true))
         }.onFailure {
-            _testUIState.emit(UiState.Failure("$it"))
             Timber.d("post-lecture-id-fail $it")
+            _testUIState.emit(UiState.Failure("$it"))
         }
     }
 

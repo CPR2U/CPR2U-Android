@@ -5,10 +5,12 @@ import com.example.cpr2u_android.data.model.response.auth.GeneralResponse
 import com.example.cpr2u_android.data.model.response.education.ResponseQuizzesList
 import com.example.cpr2u_android.data.model.response.education.ResponseUserInfo
 import com.example.cpr2u_android.domain.repository.education.EducationRepository
+import timber.log.Timber
 
 class EducationRepositoryImpl(private val educationDataSource: EducationDataSource) :
     EducationRepository {
     override suspend fun postLectureId(lectureId: Int): GeneralResponse {
+        Timber.d("repository Impl ID -> $lectureId")
         return educationDataSource.postLectureId(lectureId)
     }
 

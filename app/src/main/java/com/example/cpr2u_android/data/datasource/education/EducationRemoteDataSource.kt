@@ -4,9 +4,11 @@ import com.example.cpr2u_android.data.api.EducationService
 import com.example.cpr2u_android.data.model.response.auth.GeneralResponse
 import com.example.cpr2u_android.data.model.response.education.ResponseQuizzesList
 import com.example.cpr2u_android.data.model.response.education.ResponseUserInfo
+import timber.log.Timber
 
 class EducationRemoteDataSource(private val educationService: EducationService) : EducationDataSource {
     override suspend fun postLectureId(lectureId: Int): GeneralResponse {
+        Timber.d("Datasource lectureId -> $lectureId")
         return educationService.postLectureProgress(lectureId)
     }
 
