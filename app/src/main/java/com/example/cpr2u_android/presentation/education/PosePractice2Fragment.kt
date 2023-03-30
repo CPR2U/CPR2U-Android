@@ -54,6 +54,11 @@ class PosePractice2Fragment :
     private var increased = true
     private var wristList = arrayListOf<Float>()
 
+    var correctAngle: Int = 0
+    var incorrectAngle: Int = 0
+    var compressionRate: Int = 0
+    var pressDepth: Int = 0
+
     private val TAG = "CPR2U"
 
     private val requestPermissionLauncher =
@@ -101,6 +106,10 @@ class PosePractice2Fragment :
                 updateTime()
                 if (timerSec >= 15) {
                     view.post {
+                        val a = calculateArmAngle()
+                        val b = calculateCompressionRate()
+                        Timber.d("a -> $a")
+                        Timber.d("b -> $b")
                         findNavController().navigate(R.id.action_posePractice2Fragment_to_posePractice3Fragment)
                         Timber.d("에에..")
                     }
@@ -225,12 +234,16 @@ class PosePractice2Fragment :
             }
         }
 
-        // 어깨, 팔꿈치, 손목이 일직선인지 x 값으로 확인한다. (약간의 노이즈 발생으로 인해 10의 여유를 둠)
-        var isCorrect = xShoulder - xElbow < 10 && xElbow - xWrist < 10
+        // 일직선 판별
+        var isCorrect = xShoulder - xElbow < 20 && xElbow - xWrist < 20
         if (isCorrect) {
             Log.i(TAG, "올바른 자세에요!")
+            // TODO : 맞은 횟수 세기
+            correctAngle++
         } else {
             Log.i(TAG, "팔을 90도로 유지하세요!")
+            // TODO : 틀린 횟수 세기
+            incorrectAngle++
         }
 
         // 손목의 높이가 상승 곡선에서 꼭짓점을 찍고 하강하는 경우
@@ -242,15 +255,8 @@ class PosePractice2Fragment :
         else if (!increased && beforeWrist < yWrist - 1) {
             increased = true
             minHeight = yWrist
-
-            // wristList에 ${손목의 최대 높이 - 손목의 최소 높이}를 저장
             wristList.add(maxHeight - minHeight)
             Log.e(TAG, "wristList : $wristList")
-            // wristList에 저장된 깊이 값으로 CPR 깊이가 적절한지 확인한다.
-            // wristList에 저장된 값의 개수로 CPR 속도(2분 동안 CPR한 횟수)가 적절한지 확인한다.
-            //  가슴압박 속도는 분당 100~120회, 깊이는 5~6㎝로 빠르고 깊게 30회 압박
-            // 2분 -> 200~240회 : 추후 1분당 평균 내는것도 나쁘지 않을듯
-
             Log.i(TAG, "현재 손목 깊이: ${maxHeight - minHeight}, max: $maxHeight, min: $minHeight")
         }
 
@@ -261,6 +267,27 @@ class PosePractice2Fragment :
         }
 
         beforeWrist = yWrist
+    }
+
+    private fun calculateCompressionRate(): String {
+        return when (wristList.size) {
+            in 190..250 -> "adequate"
+            in 170 until 190 -> "slow"
+            in 250 until 270 -> "fast"
+            in 270..999999 -> "tooFast"
+            else -> "wrong"
+        }
+    }
+
+    private fun calculateArmAngle(): String {
+        val total: Double = (correctAngle + incorrectAngle).toDouble()
+        if (total < 100) return "wrong"
+        return when (total) {
+            in total * 0.7..total -> "adequate"
+            in total * 0.6..total * 0.7 -> "almost"
+            in total * 0.5..total * 0.6 -> "notGood"
+            else -> "bad"
+        }
     }
 
     // 자세 추정 모델 실행 (Movenet Thunder, CPU가 적절)
