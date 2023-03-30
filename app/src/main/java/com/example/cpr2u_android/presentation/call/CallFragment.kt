@@ -302,6 +302,7 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap
                         fullAddress = address!!.fullAddress,
                     ),
                 )
+                productInfoFragment.isCancelable = false
                 productInfoFragment.show(requireFragmentManager(), "TAG")
             }
             true
