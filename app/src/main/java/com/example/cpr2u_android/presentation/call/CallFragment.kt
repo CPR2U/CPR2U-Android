@@ -49,7 +49,8 @@ import timber.log.Timber
 import java.util.*
 import kotlin.properties.Delegates
 
-class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
+
+class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap.OnMyLocationChangeListener {
     private val callViewModel: CallViewModel by viewModel()
     private lateinit var binding: FragmentCallBinding
     private val locationPermissionCode = 100
@@ -198,7 +199,9 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
                             position(LatLng(latitude, longitude))
                             title("Current Location")
                         }
-                        mMap.addMarker(markerOptions)
+                        // 내 위치 마커 찍기
+                        mMap.isMyLocationEnabled = true
+//                        mMap.addMarker(markerOptions)
 
                         // 카메라 이동 및 줌인
                         mMap.moveCamera(
@@ -375,5 +378,11 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener {
         /** Long Press 판단 기준 시간 */
         private const val LONG_PRESSED_TIME = 2L
         private const val LOCATION_PERMISSION_REQUEST_CODE = 100
+    }
+
+    override fun onMyLocationChange(location: Location) {
+        val d1: Double = location.latitude
+        val d2: Double = location.longitude
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(d1, d2), 15f))
     }
 }

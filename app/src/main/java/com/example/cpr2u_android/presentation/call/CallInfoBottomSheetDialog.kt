@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import com.example.cpr2u_android.R
 import com.example.cpr2u_android.databinding.BottomSheetMapBinding
 import com.example.cpr2u_android.domain.model.CallInfoBottomSheet
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -26,6 +27,11 @@ class CallInfoBottomSheetDialog(val item: CallInfoBottomSheet) : BottomSheetDial
     private var callId by Delegates.notNull<Int>()
     private lateinit var updater: Runnable
     var isDispatch = true
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, R.style.BottomSheetDialog)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,6 +53,7 @@ class CallInfoBottomSheetDialog(val item: CallInfoBottomSheet) : BottomSheetDial
             tvReport.visibility = View.INVISIBLE
             tvDispatch.setOnClickListener {
                 if (isDispatch) {
+                    isCancelable = false
                     // 출동하기 성공시 dismiss
                     callViewModel.postDispatch(item.callId)
                     isDispatch = false
@@ -56,7 +63,7 @@ class CallInfoBottomSheetDialog(val item: CallInfoBottomSheet) : BottomSheetDial
                             clMarkerInfo.visibility = View.INVISIBLE
                             clTimer.visibility = View.VISIBLE
                             tvReport.visibility = View.VISIBLE
-                            tvDispatch.text = "DISPATCH END"
+                            tvDispatch.text = "ARRIVED"
                             // 타이머 시작
                             timerText = binding.tvMinute
                             timerSec = 0
@@ -74,6 +81,7 @@ class CallInfoBottomSheetDialog(val item: CallInfoBottomSheet) : BottomSheetDial
                         }
                     }
                 } else {
+                    isCancelable = true
                     // 출동종료
                     callViewModel.postDispatchArrive()
                     callViewModel.dispatchArriveSuccess.observe(viewLifecycleOwner) {
