@@ -1,5 +1,6 @@
 package com.example.cpr2u_android.presentation.call
 
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.widget.TextView
@@ -20,6 +21,7 @@ class CallingActivity : BaseActivity<ActivityCallingBinding>(R.layout.activity_c
     private val handler: Handler = Handler()
     private var callId by Delegates.notNull<Int>()
     private lateinit var updater: Runnable
+    var ring = MediaPlayer()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Timber.d("####2 oncreate...")
@@ -69,6 +71,9 @@ class CallingActivity : BaseActivity<ActivityCallingBinding>(R.layout.activity_c
         }
         val timer = Timer()
         timer.schedule(time, 0, 1000)
+
+        ring = MediaPlayer.create(this@CallingActivity, com.example.cpr2u_android.R.raw.midi)
+        ring.start()
     }
 
     private fun updateTime() {
@@ -83,5 +88,10 @@ class CallingActivity : BaseActivity<ActivityCallingBinding>(R.layout.activity_c
 
     override fun onBackPressed() {
 //        super.onBackPressed()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        ring.stop()
     }
 }
