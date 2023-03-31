@@ -122,4 +122,14 @@ class EducationViewModel(private val educationRepository: EducationRepository) :
             _userInfoUIState.emit(UiState.Failure("$it"))
         }
     }
+
+    fun getAddress() = viewModelScope.launch {
+        kotlin.runCatching {
+            educationRepository.getAddress()
+        }.onSuccess {
+            Timber.d("get-address-success -> ${it.status}")
+        }.onFailure {
+            Timber.d("get-address-fail -> $it")
+        }
+    }
 }

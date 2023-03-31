@@ -1,13 +1,18 @@
 package com.example.cpr2u_android.presentation.education
 
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import androidx.databinding.DataBindingUtil
 import com.example.cpr2u_android.R
+import com.example.cpr2u_android.data.sharedpref.CPR2USharedPreference
+import com.example.cpr2u_android.databinding.DialogQuizBinding
+import com.example.cpr2u_android.databinding.DialogSelectAddressBinding
 import com.example.cpr2u_android.databinding.FragmentEducationBinding
 import com.example.cpr2u_android.presentation.base.BaseFragment
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragment_education) {
     private val educationViewModel: EducationViewModel by sharedViewModel()
@@ -56,6 +61,25 @@ class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragme
             } else {
                 binding.clPosturePractice.isSelected = false
                 binding.tvPosePracticeComplete.text = "Not Completed"
+            }
+
+            if (educationViewModel.userInfo.value?.angelStatus == 2 && CPR2USharedPreference.getLocation()
+                    .isNullOrEmpty()
+            ) {
+                // 주소 피커 띄우기
+                val dialog = Dialog(requireContext())
+                val dialogBinding = DataBindingUtil.inflate<DialogSelectAddressBinding>(
+                    LayoutInflater.from(requireContext()),
+                    R.layout.dialog_select_address,
+                    null,
+                    false,
+                )
+                dialogBinding.npSido.apply {
+                    // TODO : 주소 max value, display value
+                    setOnValueChangedListener { picker, oldVal, newVal ->
+
+                    }
+                }
             }
 
             binding.progressBar.progress =
