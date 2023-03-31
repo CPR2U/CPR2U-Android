@@ -16,6 +16,8 @@ import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 
 class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragment_education) {
     private val educationViewModel: EducationViewModel by sharedViewModel()
+    private var pass1 = false
+    private var pass2 = false
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         educationViewModel.getUserInfo()
@@ -29,11 +31,11 @@ class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragme
         }
 
         binding.clQuiz.setOnClickListener {
-            startActivity(Intent(requireContext(), QuizActivity::class.java))
+            if (pass1) startActivity(Intent(requireContext(), QuizActivity::class.java))
         }
 
         binding.clPosturePractice.setOnClickListener {
-            startActivity(Intent(requireContext(), PosePracticeActivity::class.java))
+            if (pass2)startActivity(Intent(requireContext(), PosePracticeActivity::class.java))
         }
     }
 
@@ -41,6 +43,7 @@ class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragme
         educationViewModel.userInfo.observe(viewLifecycleOwner) {
             if (educationViewModel.userInfo.value?.isLectureCompleted == 2) {
                 binding.clLecture.isSelected = true
+                pass1 = true
                 binding.tvLectureComplete.text = "Complete"
             } else {
                 binding.clLecture.isSelected = false
@@ -49,6 +52,7 @@ class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragme
 
             if (educationViewModel.userInfo.value?.isQuizCompleted == 2) {
                 binding.clQuiz.isSelected = true
+                pass2 = true
                 binding.tvQuizComplete.text = "Complete"
             } else {
                 binding.clQuiz.isSelected = false
