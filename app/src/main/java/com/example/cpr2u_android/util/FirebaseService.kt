@@ -48,11 +48,12 @@ class FirebaseService : FirebaseMessagingService() {
         val params: Map<String, String> = remoteMessage.data
         val jsonObject = JSONObject(params)
         Timber.tag("JSON OBJECT").e(jsonObject.toString())
-        // E/JSON OBJECT: {"type":"1"}
+        // E/JSON OBJECT: {"call":"228","type":"1"}
         val type = jsonObject.getString("type")
         if (type == "1") {
-            val intent = Intent(this, MainActivity::class.java)
-            val pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            // call 변수 안에 있는 call id를 바로 띄워야함
+//            val intent = Intent(this, MainActivity::class.java)
+//            val pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         }
         Timber.d("JSON OBJECT Type -> $type")
 
@@ -74,7 +75,7 @@ class FirebaseService : FirebaseMessagingService() {
          */
 
         val intent = Intent(this, MainActivity::class.java)
-        val pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+//        val pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         val channelId = "channelId"
 
@@ -83,7 +84,7 @@ class FirebaseService : FirebaseMessagingService() {
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(notification.title)
             .setContentText(notification.body)
-            .setContentIntent(pIntent)
+//            .setContentIntent(pIntent)
 
         getSystemService(NotificationManager::class.java).run {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
