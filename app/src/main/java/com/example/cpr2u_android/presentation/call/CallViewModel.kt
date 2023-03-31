@@ -50,12 +50,12 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
         kotlin.runCatching {
             _callUIState.emit(UiState.Loading)
             val edit_address = address.substring(5, address.length)
-            Timber.d("latitude -> $latitude, Longitude -> $longitude, address -> #$edit_address")
+            Timber.d("latitude -> $latitude, Longitude -> $longitude, address -> $edit_address")
             callRepository.postCall(
                 data = RequestCall(
-                    latitude = 37.5440261,
-                    longitude = 126.9671087,
-                    fullAddress = "서울특별시 용산구 청파동3가 114-11",
+                    latitude = latitude,
+                    longitude = longitude,
+                    fullAddress = edit_address,
                 ),
             )
         }.onSuccess {
@@ -66,6 +66,12 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
         }.onFailure {
             _callUIState.emit(UiState.Failure("$it"))
             Timber.d("post-call-fail $it")
+        }
+    }
+
+    fun setCallUiState() = viewModelScope.launch {
+        kotlin.runCatching {
+            _callUIState.emit(UiState.Loading)
         }
     }
 
@@ -128,7 +134,7 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
 
     fun postDispatchReport(dispatchId: Int, content: String) = viewModelScope.launch {
         kotlin.runCatching {
-            Timber.d("report id -> ${dispatchId}")
+            Timber.d("report id -> $dispatchId")
             Timber.d("content -> $content")
             callRepository.postDispatchReport(
                 RequestDispatchReport(

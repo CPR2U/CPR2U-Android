@@ -6,6 +6,7 @@ import android.app.Dialog
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.hardware.Camera
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -60,6 +61,8 @@ class PosePractice2Fragment :
     var compressionRate: Int = 0
     var pressDepth: Int = 0
 
+    var ring = MediaPlayer()
+
     private val TAG = "CPR2U"
 
     private val requestPermissionLauncher =
@@ -99,6 +102,9 @@ class PosePractice2Fragment :
         if (!isCameraPermissionGranted()) {
             requestPermission()
         }
+
+        ring = MediaPlayer.create(requireContext(), com.example.cpr2u_android.R.raw.midi)
+        ring.start()
 
         timerText = binding.tvTimer
         timerSec = 0
@@ -366,6 +372,11 @@ class PosePractice2Fragment :
                 arguments = Bundle().apply { putString(ARG_MESSAGE, message) }
             }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        ring.stop()
     }
 }
 

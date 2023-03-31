@@ -7,6 +7,7 @@ import com.example.cpr2u_android.databinding.FragmentProfileBinding
 import com.example.cpr2u_android.presentation.base.BaseFragment
 import com.example.cpr2u_android.presentation.education.EducationViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import timber.log.Timber
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -28,7 +29,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
 
                     // 프로그래스바 설정
                     val progress =
-                        ((90 - educationViewModel.userInfo.value?.daysLeftUntilExpiration!!) / 100).toInt()
+                        ((90 - educationViewModel.userInfo.value?.daysLeftUntilExpiration!!) % 100).toInt()
                     binding.progressBarExpirationPeriod.progress = progress
 
                     val sdf = SimpleDateFormat("yyyy.MM.dd")

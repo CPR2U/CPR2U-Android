@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
+
 class LectureActivity : BaseActivity<ActivityLectureBinding>(R.layout.activity_lecture) {
     private val educationViewModel: EducationViewModel by viewModel()
     private lateinit var handler: Handler
@@ -29,10 +30,11 @@ class LectureActivity : BaseActivity<ActivityLectureBinding>(R.layout.activity_l
     private var sum: Long = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding.webView.webViewClient = WebViewClient()
-        // TODO : 추후 학습 영상 링크 url로 변경 필요
-        binding.webView.loadUrl("https://www.naver.com/")
 
+        binding.webView.loadUrl("https://youtu.be/5DWyihalLMM")
+        val webViewSetting = binding.webView.settings
+        webViewSetting.javaScriptEnabled = true
+        binding.webView.webViewClient = WebViewClient()
         handler = Handler(Looper.getMainLooper())
         runnable = Runnable {
             val dialog = Dialog(this)
@@ -69,7 +71,7 @@ class LectureActivity : BaseActivity<ActivityLectureBinding>(R.layout.activity_l
 
             dialog.show()
         }
-        handler.postDelayed(runnable, 5000L)
+        handler.postDelayed(runnable, 30000L)
     }
 
     override fun onDestroy() {

@@ -10,6 +10,7 @@ object CPR2USharedPreference {
     private const val DEVICE_TOKEN = "DEVICE_TOKEN"
     private const val IS_LOGIN = "IS_LOGIN"
     private const val USER_NAME = "USER_NAME"
+    private const val LOCATION = "LOCATION"
     lateinit var preferences: SharedPreferences
     fun init(context: Context) {
         Timber.d("shared-preference-init")
@@ -54,5 +55,13 @@ object CPR2USharedPreference {
 
     fun setUserName(value: String) {
         preferences.edit().putString(USER_NAME, value).apply()
+    }
+
+    fun getLocation(): String {
+        return preferences.getString(LOCATION, "") ?: ""
+    }
+
+    fun setLocation(value: String) {
+        preferences.edit().putString(LOCATION, value).apply()
     }
 }
