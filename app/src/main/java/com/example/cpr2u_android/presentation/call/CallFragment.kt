@@ -233,7 +233,7 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap
                                 Timber.d("ADDRESS : $address")
                                 Timber.d("FULL ADDRESS : $fullAddress")
                                 val tvLocation = view?.findViewById<TextView>(R.id.tv_location)
-                                tvLocation?.text = fullAddress
+                                tvLocation?.text = fullAddress.substring(5, fullAddress.length)
                             }
                         }
                     }
