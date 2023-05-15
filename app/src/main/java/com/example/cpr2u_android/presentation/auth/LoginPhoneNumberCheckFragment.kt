@@ -95,6 +95,7 @@ class LoginPhoneNumberCheckFragment :
             smsCode[i].onFocusChangeListener = OnFocusChangeListener { view, hasFocus ->
                 if (hasFocus) {
                     smsCode[i].text.clear()
+                    smsCodeStr = ""
                 }
             }
         }
