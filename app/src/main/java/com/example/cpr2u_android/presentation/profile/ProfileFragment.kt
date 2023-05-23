@@ -28,45 +28,11 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
         super.onViewCreated(view, savedInstanceState)
         educationViewModel.getUserInfo()
 
-        binding.btnLogout.setOnClickListener {
-            val builder: AlertDialog.Builder? = activity?.let {
-                AlertDialog.Builder(it)
-            }
+        showLogoutDialog()
+        observeUserInfo()
+    }
 
-            builder
-                ?.setMessage("Are you sure you want to Logout?")
-                ?.setTitle("Logout")
-                ?.setPositiveButton(
-                    "OK",
-                    DialogInterface.OnClickListener { dialog, id ->
-                        authViewModel.postLogout()
-                        authViewModel.logoutUIState.flowWithLifecycle(lifecycle).onEach {
-                            when (it) {
-                                is UiState.Success -> {
-                                    startActivity(
-                                        Intent(
-                                            requireContext(),
-                                            LoginActivity::class.java,
-                                        ),
-                                    )
-                                    activity?.finish()
-                                }
-
-                                else -> {}
-                            }
-                        }.launchIn(lifecycleScope)
-                    },
-                )
-                ?.setNegativeButton(
-                    "Cancel",
-                    DialogInterface.OnClickListener { dialog, id ->
-                    },
-                )
-
-            val dialog: AlertDialog? = builder?.create()
-            dialog?.show()
-        }
-
+    private fun observeUserInfo() {
         educationViewModel.userInfo.observe(viewLifecycleOwner) {
             // 닉네임 설정
             binding.tvNickname.text = "Hi ${educationViewModel.userInfo.value?.nickname}"
@@ -106,6 +72,47 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
                     binding.tvUserCertificationText2.text = "UNACQUIRED"
                 }
             }
+        }
+    }
+
+    private fun showLogoutDialog() {
+        binding.btnLogout.setOnClickListener {
+            val builder: AlertDialog.Builder? = activity?.let {
+                AlertDialog.Builder(it)
+            }
+
+            builder
+                ?.setMessage("Are you sure you want to Logout?")
+                ?.setTitle("Logout")
+                ?.setPositiveButton(
+                    "OK",
+                    DialogInterface.OnClickListener { dialog, id ->
+                        authViewModel.postLogout()
+                        authViewModel.logoutUIState.flowWithLifecycle(lifecycle).onEach {
+                            when (it) {
+                                is UiState.Success -> {
+                                    startActivity(
+                                        Intent(
+                                            requireContext(),
+                                            LoginActivity::class.java,
+                                        ),
+                                    )
+                                    activity?.finish()
+                                }
+
+                                else -> {}
+                            }
+                        }.launchIn(lifecycleScope)
+                    },
+                )
+                ?.setNegativeButton(
+                    "Cancel",
+                    DialogInterface.OnClickListener { dialog, id ->
+                    },
+                )
+
+            val dialog: AlertDialog? = builder?.create()
+            dialog?.show()
         }
     }
 }
