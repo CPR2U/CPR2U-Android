@@ -97,6 +97,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
             _isSuccess.value = false
         }
     }
+
     private fun setIsValidNickname(isValid: Boolean) {
         Timber.d("set value")
         _isValidNickname.value = isValid
@@ -104,5 +105,17 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     fun getValidationCode(): String? {
         return _validationCode.value
+    }
+
+    fun postLogout() = viewModelScope.launch {
+        kotlin.runCatching {
+            authRepository.postLogout()
+        }.onSuccess {
+            CPR2USharedPreference.setAccessToken("")
+            CPR2USharedPreference.setRefreshToken("")
+            Timber.d("post-logout-success")
+        }.onFailure {
+            Timber.d("post-logout-fail -> $it")
+        }
     }
 }
