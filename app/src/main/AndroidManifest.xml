@@ -81,6 +81,7 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name="com.example.cpr2u_android.presentation.MainActivity"
+            android:launchMode="singleInstance"
             android:exported="true" />
     </application>
 
