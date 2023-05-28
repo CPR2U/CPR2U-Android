@@ -70,10 +70,6 @@
             android:name="com.example.cpr2u_android.presentation.education.LectureActivity"
             android:exported="true" />
         <activity
-            android:name="com.example.cpr2u_android.presentation.auth.SignUpActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
             android:name="com.example.cpr2u_android.presentation.auth.LoginActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize" />
