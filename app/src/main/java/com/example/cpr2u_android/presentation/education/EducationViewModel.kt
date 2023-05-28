@@ -112,7 +112,6 @@ class EducationViewModel(private val educationRepository: EducationRepository) :
                 isQuizCompleted = it.data.isQuizCompleted,
                 isPostureCompleted = it.data.isPostureCompleted,
                 daysLeftUntilExpiration = it.data.daysLeftUntilExpiration,
-                lastLectureTitle = it.data.lastLectureTitle,
             )
             _userInfoUIState.emit(UiState.Success(true))
             Timber.d("get-user-info-success -> $it")
