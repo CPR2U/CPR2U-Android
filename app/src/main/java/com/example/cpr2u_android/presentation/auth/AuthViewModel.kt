@@ -37,6 +37,9 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         _phoneNumber = phoneNumber
     }
 
+    fun setNickname(nickname: String) {
+        _nickname = nickname
+    }
     fun postVerification(phoneNumber: String) = viewModelScope.launch {
         kotlin.runCatching {
             authRepository.postVerification(phoneNumber)
@@ -63,7 +66,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
-    fun getNickname(nickname: String) = viewModelScope.launch {
+    fun getValidNickname(nickname: String) = viewModelScope.launch {
         kotlin.runCatching {
             authRepository.getNickname(nickname)
         }.onSuccess {
@@ -75,16 +78,17 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         }
     }
 
-    fun postSignUp(nickname: String, phoneNumber: String) = viewModelScope.launch {
+    fun postSignUp(addressId: Int) = viewModelScope.launch {
         kotlin.runCatching {
             Timber.d("CPR2USharedPreference.getDeviceToken() -> ${CPR2USharedPreference.getDeviceToken()}")
-            Timber.d("phonenumber -> $phoneNumber")
-            Timber.d("nickname -> $nickname")
+            Timber.d("phonenumber -> $_phoneNumber")
+            Timber.d("nickname -> $_nickname")
             authRepository.postSignUp(
                 RequestSignUp(
                     deviceToken = CPR2USharedPreference.getDeviceToken(),
-                    phoneNumber = phoneNumber,
-                    nickname = nickname,
+                    phoneNumber = _phoneNumber,
+                    addressId = addressId,
+                    nickname = _nickname,
                 ),
             )
         }.onSuccess {
