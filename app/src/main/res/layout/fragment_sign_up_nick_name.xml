@@ -4,9 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <import type="android.view.View" />
-        
+
         <variable
             name="isError"
             type="Boolean" />
@@ -15,7 +14,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".presentation.auth.SignUpActivity">
+        tools:context=".presentation.auth.SignUpNickNameFragment">
 
         <TextView
             android:id="@+id/tv_login_check_title"
@@ -81,4 +80,5 @@
             app:layout_constraintBottom_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </layout>
