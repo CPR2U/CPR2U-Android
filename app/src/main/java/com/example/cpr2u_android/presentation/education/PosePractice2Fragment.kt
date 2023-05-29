@@ -335,14 +335,14 @@ class PosePractice2Fragment :
     // 팔 각도
     private fun calculateArmAngle(): ResultMsg {
         val total: Double = (correctAngle + incorrectAngle).toDouble()
-        if (total < 100) return ResultMsg(0, "wrong", "Something went wrong. Try Again")
+        if (total < 100) return ResultMsg(0, "wrong", "Something went wrong.\nTry Again")
         return when (total) {
             in total * 0.7..total -> ResultMsg(50, "adequate", "Good job! Very Nice angle!")
             in total * 0.6..total * 0.7 -> ResultMsg(35, "almost", "Almost there. Try again")
             in total * 0.5..total * 0.6 -> ResultMsg(
                 20,
                 "notGood",
-                "Pay more attention to the angle of your arms",
+                "Pay more attention to\nthe angle of your arms",
             )
 
             else -> ResultMsg(5, "bad", "You need some more practice")
@@ -360,7 +360,7 @@ class PosePractice2Fragment :
             in 5.0..18.0 -> ResultMsg(15, "shallow", "Press little deeper")
             in 0.0..5.0 -> ResultMsg(5, "tooShallow", "It's too shallow. Press deeply")
             in 30.0..100.0 -> ResultMsg(15, "deep", "Press slight")
-            else -> ResultMsg(0, "wrong", "Something went wrong. Try Again")
+            else -> ResultMsg(0, "wrong", "Something went wrong.\nTry Again")
         }
     }
 
