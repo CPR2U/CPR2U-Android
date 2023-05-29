@@ -45,13 +45,8 @@ class PosePractice3Fragment :
 //
 //        binding.tvPercentNum.text = educationViewModel.postPracticeScore.toString()
 //
-//        if (educationViewModel.postPracticeScore > 80) {
-//            isPassed = true
-//            binding.tvPassed.text = "PASSED"
-//        } else {
-//            isPassed = false
-//            binding.tvPassed.text = "FAILED"
-//        }
+        isPassed = educationViewModel.postPracticeScore > 80
+
         viewPager = view.findViewById(R.id.viewPager)
         onboardingAdapter = OnboardingAdapter(this)
 

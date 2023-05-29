@@ -35,25 +35,26 @@
                 android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
                 android:fontFamily="@font/notosans_bold"
                 android:text="/100"
                 android:textColor="#FFD6D6"
-                android:layout_marginBottom="16dp"
                 android:textSize="32dp"
                 app:layout_constraintBottom_toBottomOf="@+id/tv_score"
                 app:layout_constraintStart_toEndOf="@id/tv_score" />
 
             <TextView
+                android:id="@+id/tv_score_desc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="100dp"
                 android:fontFamily="@font/notosans_bold"
-                android:text="Congratulations!\nYou passed the CPR posture test."
                 android:textColor="@color/white"
                 android:textSize="24dp"
                 app:layout_constraintBottom_toBottomOf="@+id/tv_score"
                 app:layout_constraintStart_toEndOf="@+id/textView"
-                app:layout_constraintTop_toTopOf="@+id/tv_score" />
+                app:layout_constraintTop_toTopOf="@+id/tv_score"
+                tools:text="Congratulations!\nYou passed the CPR posture test." />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
