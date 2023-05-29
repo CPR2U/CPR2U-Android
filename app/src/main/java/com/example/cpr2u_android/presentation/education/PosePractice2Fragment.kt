@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.hardware.Camera
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Handler
 import android.util.Log
 import android.view.SurfaceView
@@ -31,7 +32,9 @@ import com.example.cpr2u_android.presentation.base.BaseFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
-import java.util.*
+import timber.log.Timber
+import java.util.Timer
+import java.util.TimerTask
 
 class PosePractice2Fragment :
     BaseFragment<FragmentPosePractice2Binding>(R.layout.fragment_pose_practice_2) {
@@ -61,6 +64,12 @@ class PosePractice2Fragment :
     var compressionRate: Int = 0
     var pressDepth: Int = 0
 
+    private var countDownTimer: CountDownTimer? = null
+    private var timeLeftInMillis = 0L
+    private lateinit var foundPerson: Person
+    private var timerEnd = false
+    var isTimerRunning = true
+
     var ring = MediaPlayer()
 
     private val TAG = "CPR2U"
@@ -71,7 +80,6 @@ class PosePractice2Fragment :
         ) { isGranted: Boolean ->
             if (isGranted) {
                 // Permission is granted. Continue the action or workflow in your app.
-                openCamera()
             } else {
                 // Explain to the user that the feature is unavailable because the
                 // features requires a permission that the user has denied. At the
@@ -82,7 +90,7 @@ class PosePractice2Fragment :
 //                    .show(supportFragmentManager, FRAGMENT_DIALOG)
             }
         }
-
+    val timer = Timer()
     private var timerSec: Int = 0
     private var time: TimerTask? = null
     private var timerText: TextView? = null
@@ -102,39 +110,43 @@ class PosePractice2Fragment :
         if (!isCameraPermissionGranted()) {
             requestPermission()
         }
-
-        ring = MediaPlayer.create(requireContext(), com.example.cpr2u_android.R.raw.midi)
-        ring.start()
+        binding.view3Seconds.visibility = View.VISIBLE
+        binding.tvReady3Seconds.visibility = View.VISIBLE
+        binding.cl3Seconds.visibility = View.GONE
 
         timerText = binding.tvTimer
         timerSec = 0
-        time = object : TimerTask() {
-            override fun run() {
-                updateTime()
-                if (timerSec >= 15) {
-                    view.post {
-                        educationViewModel.armAngle = calculateArmAngle()
-                        educationViewModel.compressionRate = calculateCompressionRate()
-                        educationViewModel.pressDepth = calculatePressDepth()
-                        educationViewModel.postPracticeScore =
-                            educationViewModel.armAngle.score + educationViewModel.compressionRate.score + educationViewModel.pressDepth.score
-                        findNavController().navigate(R.id.action_posePractice2Fragment_to_posePractice3Fragment)
-                    }
-                    return
-                }
-                timerSec++
-            }
-        }
-        val timer = Timer()
-        timer.schedule(time, 0, 1000)
 
         binding.tvQuit.setOnClickListener {
             activity?.finish()
         }
     }
 
+    private fun calculateTime() {
+        time = object : TimerTask() {
+            override fun run() {
+                updateTime()
+                // TODO : 추후 2분으로 수정 필요
+                if (timerSec >= 15) {
+                    educationViewModel.armAngle = calculateArmAngle()
+                    educationViewModel.compressionRate = calculateCompressionRate()
+                    educationViewModel.pressDepth = calculatePressDepth()
+                    educationViewModel.postPracticeScore =
+                        educationViewModel.armAngle.score + educationViewModel.compressionRate.score + educationViewModel.pressDepth.score
+                    timer.cancel()
+                    activity?.runOnUiThread {
+                        findNavController().navigate(R.id.action_posePractice2Fragment_to_posePractice3Fragment)
+                    }
+                }
+                timerSec++
+            }
+        }
+        timer.schedule(time, 0, 1000)
+    }
+
     private fun updateTime() {
         updater = Runnable {
+            Timber.d("##### TimerSec = $timerSec")
             val minute = if (timerSec / 60 < 1) "00" else "0${(timerSec / 60)}"
             val second =
                 if (timerSec % 60 < 10) "0${(timerSec % 60)}" else (timerSec % 60).toString()
@@ -156,7 +168,7 @@ class PosePractice2Fragment :
     override fun onPause() {
         cameraSource?.close()
         cameraSource = null
-        handler.removeCallbacks(updater)
+//        handler.removeCallbacks(updater)
         super.onPause()
     }
 
@@ -193,7 +205,32 @@ class PosePractice2Fragment :
                                  * persons에 더 많은 person 데이터가 있을 수록 정확도가 높아진다.
                                  * persons의 0번째에 있는 데이터를 가져와 자세를 분석한다.
                                  */
-                                measureCprScore(persons[0])
+                                // TODO : CPR 처음 자세 올바른지 판단 후 시작
+//                                if(isCorrectPosture(persons[0])) {
+                                if (isTimerRunning) {
+                                    set3secondsView()
+                                    isTimerRunning = false
+                                    countDownTimer = object : CountDownTimer(3000, 1000) {
+                                        override fun onTick(millisUntilFinished: Long) {
+                                            Timber.d("#####onTick 호출...")
+
+                                            timeLeftInMillis = millisUntilFinished
+                                            val secondsLeft = (timeLeftInMillis / 1000).toInt() + 1
+                                            Timber.d("##### $secondsLeft")
+                                            activity?.runOnUiThread {
+                                                binding.tv3SecondsNum.text = secondsLeft.toString()
+                                            }
+                                        }
+
+                                        override fun onFinish() {
+                                            set3secondsViewGone()
+                                            measureCprScore(persons[0])
+                                            timerSec = 0
+                                            calculateTime()
+                                        }
+                                    }
+                                    countDownTimer!!.start()
+                                }
                             }
                         },
                     ).apply {
@@ -204,6 +241,20 @@ class PosePractice2Fragment :
                 }
             }
             createPoseEstimator()
+        }
+    }
+
+    private fun set3secondsView() {
+        activity?.runOnUiThread {
+            binding.view3Seconds.visibility = View.GONE
+            binding.tvReady3Seconds.visibility = View.GONE
+            binding.cl3Seconds.visibility = View.VISIBLE
+        }
+    }
+
+    private fun set3secondsViewGone() {
+        activity?.runOnUiThread {
+            binding.cl3Seconds.visibility = View.GONE
         }
     }
 
@@ -225,14 +276,17 @@ class PosePractice2Fragment :
                     xShoulder = point.coordinate.x
                     yShoulder = point.coordinate.y
                 }
+
                 BodyPart.LEFT_ELBOW -> {
                     xElbow = point.coordinate.x
                     yElbow = point.coordinate.y
                 }
+
                 BodyPart.LEFT_WRIST -> {
                     xWrist = point.coordinate.x
                     yWrist = point.coordinate.y
                 }
+
                 else -> {}
             }
         }
@@ -285,7 +339,12 @@ class PosePractice2Fragment :
         return when (total) {
             in total * 0.7..total -> ResultMsg(50, "adequate", "Good job! Very Nice angle!")
             in total * 0.6..total * 0.7 -> ResultMsg(35, "almost", "Almost there. Try again")
-            in total * 0.5..total * 0.6 -> ResultMsg(20, "notGood", "Pay more attention to the angle of your arms",)
+            in total * 0.5..total * 0.6 -> ResultMsg(
+                20,
+                "notGood",
+                "Pay more attention to the angle of your arms",
+            )
+
             else -> ResultMsg(5, "bad", "You need some more practice")
         }
     }
@@ -315,6 +374,7 @@ class PosePractice2Fragment :
                 showDetectionScore(true)
                 MoveNet.create(requireContext(), device, ModelType.Thunder)
             }
+
             else -> {
                 null
             }
@@ -339,6 +399,7 @@ class PosePractice2Fragment :
                 // You can use the API that requires the permission.
                 openCamera()
             }
+
             else -> {
                 // You can directly ask for the permission.
                 // The registered ActivityResultCallback gets the result of this request.
@@ -376,7 +437,7 @@ class PosePractice2Fragment :
 
     override fun onStop() {
         super.onStop()
-        ring.stop()
+//        ring.stop()
     }
 }
 
