@@ -37,6 +37,7 @@ import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.OnFailureListener
@@ -49,8 +50,11 @@ import timber.log.Timber
 import java.util.*
 import kotlin.properties.Delegates
 
-
-class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap.OnMyLocationChangeListener {
+class CallFragment :
+    Fragment(),
+    OnMapReadyCallback,
+    LocationListener,
+    GoogleMap.OnMyLocationChangeListener {
     private val callViewModel: CallViewModel by viewModel()
     private lateinit var binding: FragmentCallBinding
     private val locationPermissionCode = 100
@@ -91,6 +95,7 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap
         MapsInitializer.initialize(requireContext(), MapsInitializer.Renderer.LATEST) {
             // println(it.name)
         }
+
         mapFragment = view.findViewById<MapView>(R.id.mapFragment)
         mapFragment.onCreate(savedInstanceState)
         mapFragment.getMapAsync(this)
@@ -169,6 +174,7 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap
                             initTimer()
                             return@onEach
                         }
+
                         else -> {
                             Timber.d("로딩도 아니고.. 성공도 아니고.. ")
                         }
@@ -258,6 +264,37 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap
         callViewModel.callListInfo.observe(viewLifecycleOwner) {
             callList = it
             val listNum = it.data.callList.size
+
+            if (listNum > 0) {
+                val firstMarker = it.data.callList[0]
+
+                val distance = SphericalUtil.computeDistanceBetween(
+                    LatLng(latitude, longitude),
+                    LatLng(firstMarker.latitude, firstMarker.longitude),
+                )
+                var distanceStr = ""
+                distanceStr = if (distance < 1000) {
+                    String.format("%.2f", distance) + "m"
+                } else {
+                    String.format("%.2f", distance / 1000) + "km"
+                }
+                val duration =
+                    if (distance / 100 < 1) "1" else String.format("%.0f", distance / 100)
+                val address = callList.data.callList.find {
+                    it.cprCallId == firstMarker.cprCallId
+                }
+                Timber.d("address -> $address")
+                val productInfoFragment = CallInfoBottomSheetDialog(
+                    CallInfoBottomSheet(
+                        callId = firstMarker.cprCallId,
+                        distance = distanceStr,
+                        duration = duration,
+                        fullAddress = address!!.fullAddress,
+                    ),
+                )
+                productInfoFragment.show(requireFragmentManager(), "TAG")
+            }
+
             for (i in 0 until listNum) {
                 val nLatitude = it.data.callList[i].latitude
                 val nLongitude = it.data.callList[i].longitude
@@ -274,6 +311,7 @@ class CallFragment : Fragment(), OnMapReadyCallback, LocationListener, GoogleMap
             Timber.d("위치 -----> ${marker.position.latitude}")
             Timber.d("CALL ID -> ${marker.title}")
             if (marker.title != "Current Location") {
+                //
                 val distance = SphericalUtil.computeDistanceBetween(
                     LatLng(latitude, longitude),
                     LatLng(marker.position.latitude, marker.position.longitude),
