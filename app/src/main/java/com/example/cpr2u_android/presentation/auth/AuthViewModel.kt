@@ -8,6 +8,9 @@ import com.example.cpr2u_android.data.model.request.auth.RequestLogin
 import com.example.cpr2u_android.data.model.request.auth.RequestSignUp
 import com.example.cpr2u_android.data.sharedpref.CPR2USharedPreference
 import com.example.cpr2u_android.domain.repository.auth.AuthRepository
+import com.example.cpr2u_android.util.UiState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -31,6 +34,9 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     private val _isSuccess = MutableLiveData<Boolean>()
     var isSuccess: LiveData<Boolean> = _isSuccess
+
+    private val _logoutUIState = MutableStateFlow<UiState<Boolean>>(UiState.Loading)
+    val logoutUIState: StateFlow<UiState<Boolean>> = _logoutUIState
 
     fun setPhoneNumber(phoneNumber: String) {
         Timber.d("### set phone number -> $phoneNumber")
@@ -101,6 +107,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
             _isSuccess.value = false
         }
     }
+
     private fun setIsValidNickname(isValid: Boolean) {
         Timber.d("set value")
         _isValidNickname.value = isValid
@@ -108,5 +115,19 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     fun getValidationCode(): String? {
         return _validationCode.value
+    }
+
+    fun postLogout() = viewModelScope.launch {
+        kotlin.runCatching {
+            authRepository.postLogout()
+        }.onSuccess {
+            CPR2USharedPreference.setAccessToken("")
+            CPR2USharedPreference.setRefreshToken("")
+            Timber.d("post-logout-success")
+            _logoutUIState.emit(UiState.Success(true))
+        }.onFailure {
+            Timber.d("post-logout-fail -> $it")
+            _logoutUIState.emit(UiState.Failure("$it"))
+        }
     }
 }

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="acquired"
             type="Boolean" />
@@ -69,8 +70,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="27dp"
-                    android:visibility="@{acquired? View.VISIBLE : View.INVISIBLE}"
                     android:src="@drawable/ic_heart_person_big"
+                    android:visibility="@{acquired? View.VISIBLE : View.INVISIBLE}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -130,10 +131,10 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/cl_expiration_period"
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:visibility="@{acquired? View.VISIBLE : View.GONE}"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/cl_user_text"
-                android:layout_height="wrap_content" >
+                app:layout_constraintTop_toBottomOf="@id/cl_user_text">
 
                 <TextView
                     android:id="@+id/tv_expiration_period"
@@ -170,9 +171,6 @@
                     app:layout_constraintEnd_toEndOf="@id/progress_bar_expiration_period"
                     app:layout_constraintTop_toBottomOf="@id/progress_bar_expiration_period" />
             </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -404,6 +402,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_logout"
             style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
