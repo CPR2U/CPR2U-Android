@@ -13,6 +13,7 @@ import com.example.cpr2u_android.presentation.auth.AuthViewModel
 import com.example.cpr2u_android.presentation.auth.LoginActivity
 import com.example.cpr2u_android.presentation.base.BaseFragment
 import com.example.cpr2u_android.presentation.education.EducationViewModel
+import com.example.cpr2u_android.presentation.splash.SplashActivity
 import com.example.cpr2u_android.util.UiState
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -94,7 +95,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(R.layout.fragment_p
                                     startActivity(
                                         Intent(
                                             requireContext(),
-                                            LoginActivity::class.java,
+                                            SplashActivity::class.java,
                                         ),
                                     )
                                     activity?.finish()
