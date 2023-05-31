@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.graphics.PointF
 import android.hardware.Camera
 import android.media.MediaPlayer
 import android.os.Bundle
@@ -35,6 +36,7 @@ import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import timber.log.Timber
 import java.util.Timer
 import java.util.TimerTask
+import kotlin.math.abs
 
 class PosePractice2Fragment :
     BaseFragment<FragmentPosePractice2Binding>(R.layout.fragment_pose_practice_2) {
@@ -59,6 +61,11 @@ class PosePractice2Fragment :
     private var increased = true
     private var wristList = arrayListOf<Float>()
 
+    var pressCount: Int = 0
+    private var avgMaxHeight = 0f
+    private var avgMinHeight = 0f
+    private var avgDepth = 0f
+
     var correctAngle: Int = 0
     var incorrectAngle: Int = 0
     var compressionRate: Int = 0
@@ -68,6 +75,7 @@ class PosePractice2Fragment :
     private var timeLeftInMillis = 0L
     private lateinit var foundPerson: Person
     private var timerEnd = false
+    var isPreparing = false
     var isTimerRunning = true
 
     var ring = MediaPlayer()
@@ -95,7 +103,9 @@ class PosePractice2Fragment :
     private var time: TimerTask? = null
     private var timerText: TextView? = null
     private val handler: Handler = Handler()
-    private lateinit var updater: Runnable
+    private var updater: Runnable? = null
+    private var showView = false
+    private var goneView = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -118,6 +128,8 @@ class PosePractice2Fragment :
         timerSec = 0
 
         binding.tvQuit.setOnClickListener {
+            countDownTimer?.cancel()
+//            handler.removeCallbacks(updater)
             activity?.finish()
         }
     }
@@ -152,7 +164,7 @@ class PosePractice2Fragment :
                 if (timerSec % 60 < 10) "0${(timerSec % 60)}" else (timerSec % 60).toString()
             timerText?.text = "$minute : $second"
         }
-        handler.post(updater)
+        updater?.let { handler.post(it) }
     }
 
     override fun onStart() {
@@ -161,15 +173,29 @@ class PosePractice2Fragment :
     }
 
     override fun onResume() {
+        Timber.d("onResume...")
         cameraSource?.resume()
+        countDownTimer?.cancel()
         super.onResume()
     }
 
     override fun onPause() {
+        Timber.d("onPause...")
         cameraSource?.close()
         cameraSource = null
-//        handler.removeCallbacks(updater)
+        countDownTimer?.cancel()
+        timer.cancel()
+        updater?.let {
+            handler.removeCallbacks(it)
+            updater = null
+        }
         super.onPause()
+    }
+
+    override fun onDestroy() {
+        Timber.d("onDestroy...")
+        handler.removeCallbacksAndMessages(null)
+        super.onDestroy()
     }
 
     // check if permission is granted or not.
@@ -207,29 +233,33 @@ class PosePractice2Fragment :
                                  */
                                 // TODO : CPR 처음 자세 올바른지 판단 후 시작
 //                                if(isCorrectPosture(persons[0])) {
-                                if (isTimerRunning) {
-                                    set3secondsView()
-                                    isTimerRunning = false
-                                    countDownTimer = object : CountDownTimer(3000, 1000) {
-                                        override fun onTick(millisUntilFinished: Long) {
-                                            Timber.d("#####onTick 호출...")
-
-                                            timeLeftInMillis = millisUntilFinished
-                                            val secondsLeft = (timeLeftInMillis / 1000).toInt() + 1
-                                            Timber.d("##### $secondsLeft")
+                                measureIsPreparing(persons[0])
+                                if (isPreparing) {
+                                    Timber.d("########## 여기")
+                                    isPreparing = false
+                                    if (isTimerRunning) {
+                                        isTimerRunning = false
+                                        set3secondsView()
+                                        if (showView) {
                                             activity?.runOnUiThread {
-                                                binding.tv3SecondsNum.text = secondsLeft.toString()
+                                                var timeLeft = 4
+                                                countDownTimer =
+                                                    object : CountDownTimer(3000, 1000) {
+                                                        override fun onTick(millisUntilFinished: Long) {
+                                                            timeLeft--
+                                                            binding.tv3SecondsNum.text = timeLeft.toString()
+                                                        }
+
+                                                        override fun onFinish() {
+                                                            set3secondsViewGone()
+                                                            measureCprScore(persons[0])
+                                                            timerSec = 0
+                                                            calculateTime()
+                                                        }
+                                                    }.start()
                                             }
                                         }
-
-                                        override fun onFinish() {
-                                            set3secondsViewGone()
-                                            measureCprScore(persons[0])
-                                            timerSec = 0
-                                            calculateTime()
-                                        }
                                     }
-                                    countDownTimer!!.start()
                                 }
                             }
                         },
@@ -245,17 +275,124 @@ class PosePractice2Fragment :
     }
 
     private fun set3secondsView() {
+        Timber.d("#### 저기요...")
         activity?.runOnUiThread {
             binding.view3Seconds.visibility = View.GONE
             binding.tvReady3Seconds.visibility = View.GONE
             binding.cl3Seconds.visibility = View.VISIBLE
         }
+        showView = true
     }
 
     private fun set3secondsViewGone() {
+        Timber.d("??? 들어오니???")
         activity?.runOnUiThread {
+            Timber.d("???>> 들어오니???")
             binding.cl3Seconds.visibility = View.GONE
         }
+        goneView = true
+    }
+
+    private fun measureIsPreparing(person: Person): Boolean {
+        lateinit var shoulderLeft: PointF
+        lateinit var shoulderRight: PointF
+
+        lateinit var elbowLeft: PointF
+        lateinit var elbowRight: PointF
+
+        lateinit var wristLeft: PointF
+        lateinit var wristRight: PointF
+
+        lateinit var hipLeft: PointF
+        lateinit var hipRight: PointF
+
+        lateinit var kneeLeft: PointF
+        lateinit var kneeRight: PointF
+
+        lateinit var ankleLeft: PointF
+        lateinit var ankleRight: PointF
+
+        person.keyPoints.forEach { point ->
+            when (point.bodyPart) {
+                BodyPart.LEFT_SHOULDER -> {
+                    shoulderLeft = point.coordinate
+                }
+
+                BodyPart.RIGHT_SHOULDER -> {
+                    shoulderRight = point.coordinate
+                }
+
+                BodyPart.LEFT_ELBOW -> {
+                    elbowLeft = point.coordinate
+                }
+
+                BodyPart.RIGHT_ELBOW -> {
+                    elbowRight = point.coordinate
+                }
+
+                BodyPart.LEFT_WRIST -> {
+                    wristLeft = point.coordinate
+                }
+
+                BodyPart.RIGHT_WRIST -> {
+                    wristRight = point.coordinate
+                }
+
+                BodyPart.LEFT_HIP -> {
+                    hipLeft = point.coordinate
+                }
+
+                BodyPart.RIGHT_HIP -> {
+                    hipRight = point.coordinate
+                }
+
+                BodyPart.LEFT_KNEE -> {
+                    kneeLeft = point.coordinate
+                }
+
+                BodyPart.RIGHT_KNEE -> {
+                    kneeRight = point.coordinate
+                }
+
+                BodyPart.LEFT_ANKLE -> {
+                    ankleLeft = point.coordinate
+                }
+
+                BodyPart.RIGHT_ANKLE -> {
+                    ankleRight = point.coordinate
+                }
+
+                else -> {}
+            }
+        }
+
+        var isElbowLeftVertical =
+            abs(shoulderLeft.x - elbowLeft.x) < 20 && abs(elbowLeft.x - wristLeft.x) < 20 &&
+                wristLeft.y > elbowLeft.y && elbowLeft.y > shoulderLeft.y
+        var isElbowRightVertical =
+            abs(shoulderRight.x - elbowRight.x) < 20 && abs(elbowRight.x - wristRight.x) < 20 &&
+                wristRight.y > elbowRight.y && elbowRight.y > shoulderRight.y
+
+        var isBodyLeftVertical = shoulderLeft.x < hipLeft.x && shoulderLeft.y < hipLeft.y
+        var isBodyRightVertical = shoulderRight.x < hipRight.x && shoulderRight.y < hipRight.y
+
+        var isBodyLeftSeated =
+            hipLeft.x > kneeLeft.x && kneeLeft.x < ankleLeft.x && hipLeft.x < ankleLeft.x &&
+                hipLeft.y < kneeLeft.y && hipLeft.y < ankleLeft.y && abs(ankleLeft.y - kneeLeft.y) < 20
+        var isBodyRightSeated =
+            hipRight.x > kneeRight.x && kneeRight.x < ankleRight.x && hipRight.x < ankleRight.x &&
+                hipRight.y < kneeRight.y && hipRight.y < ankleRight.y && abs(ankleRight.y - kneeRight.y) < 20
+
+        val isElbowVertical = isElbowLeftVertical && isElbowRightVertical
+        val isBodyVertical = isBodyLeftVertical && isBodyRightVertical
+        val isBodySeated = isBodyLeftSeated && isBodyRightSeated
+
+        if (isElbowVertical && isBodyVertical && isBodySeated) {
+            Log.i(TAG, "CPR 준비 완료")
+            isPreparing = true
+            return true
+        }
+        return false
     }
 
     /**
@@ -290,9 +427,35 @@ class PosePractice2Fragment :
                 else -> {}
             }
         }
+        measureElbowDegree(person)
+        measureCprRate(person)
+    }
 
-        // 일직선 판별
-        var isCorrect = xShoulder - xElbow < 20 && xElbow - xWrist < 20
+    private fun measureElbowDegree(person: Person) {
+        // person이 갖고 있는 관절 데이터들에서 어깨, 팔꿈치, 손목 데이터 추출 (현재 임시로 왼쪽 관절만 추출한 상태)
+        lateinit var shoulder: PointF
+        lateinit var elbow: PointF
+        lateinit var wrist: PointF
+
+        person.keyPoints.forEach { point ->
+            when (point.bodyPart) {
+                BodyPart.LEFT_SHOULDER -> {
+                    shoulder = point.coordinate
+                }
+
+                BodyPart.LEFT_ELBOW -> {
+                    elbow = point.coordinate
+                }
+
+                BodyPart.LEFT_WRIST -> {
+                    wrist = point.coordinate
+                }
+
+                else -> {}
+            }
+        }
+
+        var isCorrect = shoulder.x - elbow.x < 20 && elbow.x - wrist.x < 20
         if (isCorrect) {
             Log.i(TAG, "올바른 자세에요!")
             // TODO : 맞은 횟수 세기
@@ -302,23 +465,91 @@ class PosePractice2Fragment :
             // TODO : 틀린 횟수 세기
             incorrectAngle++
         }
+    }
 
-        // 손목의 높이가 상승 곡선에서 꼭짓점을 찍고 하강하는 경우
-        if (increased && beforeWrist > yWrist + 1) {
-            increased = false
-            maxHeight = yWrist
+    private fun measureCprRate(person: Person) {
+        lateinit var wrist: PointF
+
+        // 정확도 0.4이상인 것만 계산
+        if (person.score > 0.4) {
+            person.keyPoints.forEach { point ->
+                when (point.bodyPart) {
+                    BodyPart.LEFT_WRIST -> {
+                        wrist = point.coordinate
+                    }
+
+                    else -> {}
+                }
+            }
+
+            pressCount = wristList.size
+
+            if (avgMinHeight == 0f && avgMaxHeight == 0f) {
+                avgMinHeight = wrist.y
+                avgMaxHeight = wrist.y
+            }
+
+            // 손목의 높이가 상승 곡선에서 꼭짓점을 찍고 하강하는 경우
+            if (increased && beforeWrist > wrist.y + 1) {
+                // 고점 이상값인지 검증
+                avgMaxHeight = (avgMaxHeight * pressCount + wrist.y) / (pressCount + 1)
+                Log.i(TAG, "고점 이상값 " + (avgMaxHeight - wrist.y).toString())
+                if (Math.abs(avgMaxHeight - wrist.y) < 50) {
+                    // 이상값이 아니라 판단되면 고점 등록
+                    increased = false
+                    maxHeight = beforeWrist
+                    Log.i(TAG, "평균 " + avgMaxHeight + " 고점 " + maxHeight)
+                }
+            }
+
+            // 손목의 높이가 하강 곡선에서 꼭짓점을 찍고 상승하는 경우
+            else if (!increased && beforeWrist < wrist.y - 1) {
+                // 저점 이상값인지 검증
+                avgMinHeight = (avgMinHeight * pressCount + wrist.y) / (pressCount + 1)
+                Log.i(TAG, "저점 이상값 " + (avgMinHeight - wrist.y).toString())
+                if (Math.abs(avgMinHeight - wrist.y) < 50) {
+                    // 이상값이 아니라 판단되면 저점 등록
+                    increased = true
+                    minHeight = beforeWrist
+                    Log.i(TAG, "평균 " + avgMinHeight + " 저점 " + minHeight)
+
+                    // depth 등록
+                    val depth = maxHeight - minHeight
+                    if (depth > 0) {
+                        Log.i(TAG, "깊이 : " + depth.toString())
+                        wristList.add(depth)
+                    }
+
+                    Log.e(TAG, "개수 " + wristList.size.toString())
+                    Log.e(TAG, "${wristList.last()}")
+                }
+            }
+
+            beforeWrist = wrist.y
+            Log.e(TAG, "깊이 " + getCprDepthResult())
+            Log.e(TAG, "속도 " + getCprRateResult())
         }
-        // 손목의 높이가 하강 곡선에서 꼭짓점을 찍고 상승하는 경우
-        else if (!increased && beforeWrist < yWrist - 1) {
-            increased = true
-            minHeight = yWrist
+    }
 
-            val num = if (maxHeight > minHeight) maxHeight - minHeight else minHeight - maxHeight
-            wristList.add(num)
-            Log.e(TAG, "${wristList.last()}")
+    private fun getCprRateResult(): Double {
+        pressCount = wristList.size
+        val minutes = 60.0 * 2.0
+        // per sec 기준
+        return pressCount / minutes
+    }
+
+    private fun getCprDepthResult(): Float {
+        pressCount = wristList.size
+        var min = Float.MAX_VALUE
+        var max = 0f
+        var depth = 0f
+        for (w in wristList) {
+            if (w < min) {
+                min = w
+            }; else if (w > max) max = w
+            depth += w
         }
-
-        beforeWrist = yWrist
+        return (depth - min - max) / (pressCount - 2)
     }
 
     private fun calculateCompressionRate(): ResultMsg {
@@ -351,11 +582,7 @@ class PosePractice2Fragment :
 
     // 압박 깊이
     private fun calculatePressDepth(): ResultMsg {
-        var total = 0.0
-        wristList.forEach {
-            total += it
-        }
-        return when (total / wristList.size) {
+        return when (getCprDepthResult()) {
             in 18.0..30.0 -> ResultMsg(50, "adequate", "Good job! Very adequate!")
             in 5.0..18.0 -> ResultMsg(15, "shallow", "Press little deeper")
             in 0.0..5.0 -> ResultMsg(5, "tooShallow", "It's too shallow. Press deeply")
