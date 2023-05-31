@@ -37,7 +37,6 @@ import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.OnFailureListener
@@ -72,8 +71,8 @@ class CallFragment :
     private var timeLeftInMillis = 0L
     private lateinit var countDownTimer: CountDownTimer
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private var latitude by Delegates.notNull<Double>()
-    private var longitude by Delegates.notNull<Double>()
+    private var latitude: Double = 0.0
+    private var longitude: Double = 0.0
     private lateinit var address: Address
     private lateinit var fullAddress: String
 
