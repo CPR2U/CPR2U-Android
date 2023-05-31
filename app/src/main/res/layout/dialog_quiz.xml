@@ -26,8 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="52dp"
-            android:visibility="invisible"
-            android:src="@drawable/iv_heart_gray"
+            android:src="@drawable/ic_heart_gray"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -39,7 +38,7 @@
             android:fontFamily="@font/notosans_bold"
             android:text="Congratulation!"
             android:textColor="@color/black"
-            android:textSize="18sp"
+            android:textSize="24dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/iv_heart" />
@@ -51,7 +50,7 @@
             android:fontFamily="@font/notosans_regular"
             android:text="You are perfect!"
             android:textColor="@color/black"
-            android:textSize="14sp"
+            android:textSize="14dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_title" />
@@ -66,7 +65,7 @@
             android:fontFamily="@font/notosans_bold"
             android:paddingHorizontal="77dp"
             android:paddingVertical="12dp"
-            android:text="FINISH"
+            android:text="GOT IT"
             android:textColor="@color/white"
             android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="parent"
