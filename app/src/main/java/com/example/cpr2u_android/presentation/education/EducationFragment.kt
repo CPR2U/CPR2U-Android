@@ -12,6 +12,7 @@ import com.example.cpr2u_android.databinding.DialogSelectAddressBinding
 import com.example.cpr2u_android.databinding.FragmentEducationBinding
 import com.example.cpr2u_android.presentation.base.BaseFragment
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import timber.log.Timber
 
 class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragment_education) {
     private val educationViewModel: EducationViewModel by sharedViewModel()
@@ -50,6 +51,7 @@ class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragme
                 binding.doing2 = educationViewModel.userInfo.value?.isLectureCompleted != 0
                 binding.done2 = false
             } else {
+                pass2 = true
                 binding.doing2 = false
                 binding.done2 = true
             }
