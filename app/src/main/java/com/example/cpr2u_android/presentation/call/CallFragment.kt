@@ -289,6 +289,7 @@ class CallFragment :
                         distance = distanceStr,
                         duration = duration,
                         fullAddress = address!!.fullAddress,
+                        callAt = address.calledAt
                     ),
                 )
                 productInfoFragment.show(requireFragmentManager(), "TAG")
@@ -333,6 +334,7 @@ class CallFragment :
                         distance = distanceStr,
                         duration = duration,
                         fullAddress = address!!.fullAddress,
+                        callAt = address.calledAt
                     ),
                 )
                 productInfoFragment.show(requireFragmentManager(), "TAG")

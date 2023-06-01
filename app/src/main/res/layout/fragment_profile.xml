@@ -53,7 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="18dp"
-            android:background="@drawable/rectangle_border_red_fill_lightred_radius_16dp"
+            android:background="@drawable/rectangle_fill_lightred_radius_16dp"
             android:paddingVertical="20dp"
             app:layout_constraintTop_toBottomOf="@id/cl_top">
 
@@ -69,7 +69,6 @@
                     android:id="@+id/iv_certification_heart"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="27dp"
                     android:src="@drawable/ic_heart_person_big"
                     android:visibility="@{acquired? View.VISIBLE : View.INVISIBLE}"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -80,7 +79,6 @@
                     android:id="@+id/iv_certification"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="27dp"
                     android:src="@drawable/ic_person_big"
                     android:visibility="@{acquired? View.INVISIBLE : View.VISIBLE}"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -104,7 +102,7 @@
                     android:id="@+id/tv_user_certification_text_1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="22dp"
                     android:fontFamily="@font/notosans_regular"
                     android:text="Your Certification Status is"
                     android:textColor="@color/black"
@@ -122,7 +120,7 @@
                     android:text="ACQUIRED (D-19)"
                     android:textColor="@color/main_red"
                     android:textSize="20sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_user_certification_text_1"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/iv_certification_heart" />
 

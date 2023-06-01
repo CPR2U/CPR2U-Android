@@ -87,6 +87,16 @@
             android:layout_height="match_parent"
             android:background="#06E4E4E4" />
 
+        <ImageView
+            android:id="@+id/iv_cpr_guidelines"
+            android:layout_width="390dp"
+            android:layout_height="390dp"
+            android:background="@drawable/ic_cpr_guidelines"
+            app:layout_constraintBottom_toBottomOf="@+id/surfaceView"
+            app:layout_constraintEnd_toEndOf="@+id/surfaceView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <TextView
             android:id="@+id/tv_ready_3_seconds"
             android:layout_width="wrap_content"

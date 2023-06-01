@@ -67,7 +67,7 @@ class PosePractice3Fragment :
                 binding.ivHeart.setImageResource(R.drawable.ic_certificate_big)
                 binding.ivHeart.visibility = View.VISIBLE
                 binding.tvTitle.text = "Congratulation!"
-                binding.tvSubtitle.text = "You have got CPR Angel Certificate!"
+                binding.tvSubtitle.text = "You have got CPR Angel Certificate!\nNow you're a CPR Angel and can help\nsomeone in cardiac arrest."
 
                 binding.buttonFinish.setOnClickListener {
                     educationViewModel.postExercisesProgress()

@@ -120,6 +120,7 @@ class PosePractice2Fragment :
         if (!isCameraPermissionGranted()) {
             requestPermission()
         }
+        binding.ivCprGuidelines.visibility = View.VISIBLE
         binding.view3Seconds.visibility = View.VISIBLE
         binding.tvReady3Seconds.visibility = View.VISIBLE
         binding.cl3Seconds.visibility = View.GONE
@@ -277,6 +278,7 @@ class PosePractice2Fragment :
     private fun set3secondsView() {
         Timber.d("#### 저기요...")
         activity?.runOnUiThread {
+            binding.ivCprGuidelines.visibility = View.GONE
             binding.view3Seconds.visibility = View.GONE
             binding.tvReady3Seconds.visibility = View.GONE
             binding.cl3Seconds.visibility = View.VISIBLE
