@@ -2,6 +2,7 @@ package com.example.cpr2u_android.presentation.call
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -24,11 +25,13 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.example.cpr2u_android.R
 import com.example.cpr2u_android.data.model.response.call.ResponseCallList
+import com.example.cpr2u_android.databinding.DialogDispatchSuccessBinding
 import com.example.cpr2u_android.databinding.FragmentCallBinding
 import com.example.cpr2u_android.domain.model.CallInfoBottomSheet
 import com.example.cpr2u_android.util.UiState
@@ -44,17 +47,17 @@ import com.google.android.gms.tasks.OnSuccessListener
 import com.google.maps.android.SphericalUtil
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import timber.log.Timber
+import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.properties.Delegates
 
 class CallFragment :
     Fragment(),
     OnMapReadyCallback,
     LocationListener,
     GoogleMap.OnMyLocationChangeListener {
-    private val callViewModel: CallViewModel by viewModel()
+    private val callViewModel: CallViewModel by sharedViewModel()
     private lateinit var binding: FragmentCallBinding
     private val locationPermissionCode = 100
     lateinit var mapFragment: MapView
@@ -75,12 +78,15 @@ class CallFragment :
     private var longitude: Double = 0.0
     private lateinit var address: Address
     private lateinit var fullAddress: String
+    var currentMarker: Marker? = null
 
     private var timerSec: Int = 0
     private var time: TimerTask? = null
     private var timerText: TextView? = null
     private val handler: Handler = Handler()
     private lateinit var updater: Runnable
+    var productInfoFragment: CallInfoBottomSheetDialog? = null
+    var isComplete = false
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
@@ -266,7 +272,6 @@ class CallFragment :
 
             if (listNum > 0) {
                 val firstMarker = it.data.callList[0]
-
                 val distance = SphericalUtil.computeDistanceBetween(
                     LatLng(latitude, longitude),
                     LatLng(firstMarker.latitude, firstMarker.longitude),
@@ -283,16 +288,17 @@ class CallFragment :
                     it.cprCallId == firstMarker.cprCallId
                 }
                 Timber.d("address -> $address")
-                val productInfoFragment = CallInfoBottomSheetDialog(
+                productInfoFragment = CallInfoBottomSheetDialog(
                     CallInfoBottomSheet(
                         callId = firstMarker.cprCallId,
                         distance = distanceStr,
                         duration = duration,
                         fullAddress = address!!.fullAddress,
-                        callAt = address.calledAt
+                        callAt = address.calledAt,
                     ),
-                )
-                productInfoFragment.show(requireFragmentManager(), "TAG")
+                    convertTime = convertCallAtStringToStartTime(address.calledAt),
+                ) { checkDistanceAndShowLog() }
+                productInfoFragment!!.show(requireFragmentManager(), "TAG")
             }
 
             for (i in 0 until listNum) {
@@ -305,9 +311,9 @@ class CallFragment :
                 mMap.addMarker(nMarkerOptions)
             }
         }
-
         // 마커를 클릭하면 BottomSheet를 띄움
         mMap.setOnMarkerClickListener { marker ->
+            currentMarker = marker
             Timber.d("위치 -----> ${marker.position.latitude}")
             Timber.d("CALL ID -> ${marker.title}")
             if (marker.title != "Current Location") {
@@ -328,19 +334,85 @@ class CallFragment :
                     it.cprCallId.toString() == marker.title
                 }
                 Timber.d("address -> $address")
-                val productInfoFragment = CallInfoBottomSheetDialog(
+                productInfoFragment = CallInfoBottomSheetDialog(
                     CallInfoBottomSheet(
                         callId = marker.title!!.toInt(),
                         distance = distanceStr,
                         duration = duration,
                         fullAddress = address!!.fullAddress,
-                        callAt = address.calledAt
+                        callAt = address.calledAt,
                     ),
-                )
-                productInfoFragment.show(requireFragmentManager(), "TAG")
+                    convertTime = convertCallAtStringToStartTime(address.calledAt),
+                ) { checkDistanceAndShowLog() }
+                productInfoFragment!!.show(requireFragmentManager(), "TAG")
             }
             true
         }
+    }
+
+    private fun checkDistanceAndShowLog() {
+        activity?.runOnUiThread {
+            callViewModel.isDispatch.observe(viewLifecycleOwner) {
+                if (it) {
+                    val distance = SphericalUtil.computeDistanceBetween(
+                        LatLng(latitude, longitude),
+                        LatLng(
+                            currentMarker!!.position.latitude,
+                            currentMarker!!.position.longitude,
+                        ),
+                    )
+                    if (distance <= 70) { // 100m를 km로 변환하여 0.1로 설정
+                        if (!isComplete) {
+                            isComplete = true
+                            callViewModel.postDispatchArrive()
+                            productInfoFragment!!.dismiss()
+                            Timber.d("현재 위치와 마커의 위치가 70m 이하입니다.")
+                            val dialog = Dialog(requireContext())
+                            val binding = DataBindingUtil.inflate<DialogDispatchSuccessBinding>(
+                                LayoutInflater.from(requireContext()),
+                                R.layout.dialog_dispatch_success,
+                                null,
+                                false,
+                            )
+                            binding.buttonFinish.setOnClickListener {
+                                callViewModel.dispatchArriveSuccess.observe(viewLifecycleOwner) {
+                                    if (it) {
+                                        dialog.dismiss()
+                                    } else {
+                                        Timber.d("arrive server fail")
+                                    }
+                                }
+                            }
+                            binding.tvReport.setOnClickListener {
+                                Timber.d("callViewmodel id -> ${callViewModel.dispatchId.value}")
+                                dialog.dismiss()
+                                val bundle = Bundle().apply {
+                                    putInt("dispatchId", callViewModel.dispatchId.value!!)
+                                }
+                                startActivity(
+                                    Intent(
+                                        requireContext(),
+                                        DispatchReportActivity::class.java,
+                                    ).putExtras(bundle),
+                                )
+                            }
+                            dialog.setContentView(binding.root)
+                            dialog.show()
+                            callViewModel.isDispatch.postValue(false)
+                        }
+                    } else {
+                        Timber.d("아직 출동 안함")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun convertCallAtStringToStartTime(time: String): String {
+        // 13:00:00 2023-06-01 23:56:26 2023-06-02 00:14
+        val simpleDateTypeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+        val hourFormatWithAmPm = SimpleDateFormat("a KK:mm", Locale.KOREA)
+        return hourFormatWithAmPm.format(simpleDateTypeFormat.parse(time)!!).toString()
     }
 
     private fun startTimer() {

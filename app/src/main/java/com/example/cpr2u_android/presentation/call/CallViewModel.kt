@@ -41,6 +41,8 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
     private val _dispatchId = MutableLiveData<Int>()
     val dispatchId: LiveData<Int> = _dispatchId
 
+    val isDispatch = MutableLiveData<Boolean>()
+
     /*
     "latitude": 37.5440261,
   "longitude": 126.9671087,
