@@ -70,7 +70,8 @@ class PosePractice3Fragment :
                 binding.tvSubtitle.text = "You have got CPR Angel Certificate!\nNow you're a CPR Angel and can help\nsomeone in cardiac arrest."
 
                 binding.buttonFinish.setOnClickListener {
-                    educationViewModel.postExercisesProgress()
+                    educationViewModel.postExercisesProgress(educationViewModel.postPracticeScore)
+                    Timber.d("educationViewModel.postPracticeScore -> ${educationViewModel.postPracticeScore}")
                     educationViewModel.exercisesProgressUIState.flowWithLifecycle(lifecycle)
                         .onEach {
                             when (it) {

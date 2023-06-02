@@ -8,6 +8,9 @@
         <variable
             name="map_info"
             type="com.example.cpr2u_android.domain.model.CallInfoBottomSheet" />
+        <variable
+            name="start_time"
+            type="String" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -109,7 +112,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/notosans_regular"
-                    android:text="@{map_info.callAt}"
+                    android:text="@{start_time}"
                     android:textColor="@color/main_red"
                     android:textSize="18dp"
                     app:layout_constraintEnd_toEndOf="parent"
