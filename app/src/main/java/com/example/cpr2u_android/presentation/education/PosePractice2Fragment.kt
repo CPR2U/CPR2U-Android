@@ -77,6 +77,7 @@ class PosePractice2Fragment :
     private var timerEnd = false
     var isPreparing = false
     var isTimerRunning = true
+    var timeFinished = false
 
     var ring = MediaPlayer()
 
@@ -140,7 +141,7 @@ class PosePractice2Fragment :
             override fun run() {
                 updateTime()
                 // TODO : 추후 2분으로 수정 필요
-                if (timerSec >= 15) {
+                if (timerSec >= 120) {
                     educationViewModel.armAngle = calculateArmAngle()
                     educationViewModel.compressionRate = calculateCompressionRate()
                     educationViewModel.pressDepth = calculatePressDepth()
@@ -243,24 +244,33 @@ class PosePractice2Fragment :
                                         set3secondsView()
                                         if (showView) {
                                             activity?.runOnUiThread {
+                                                ring = MediaPlayer.create(
+                                                    requireContext(),
+                                                    com.example.cpr2u_android.R.raw.cpr_posture_sound,
+                                                )
+                                                ring.start()
                                                 var timeLeft = 4
                                                 countDownTimer =
                                                     object : CountDownTimer(3000, 1000) {
                                                         override fun onTick(millisUntilFinished: Long) {
                                                             timeLeft--
-                                                            binding.tv3SecondsNum.text = timeLeft.toString()
+                                                            binding.tv3SecondsNum.text =
+                                                                timeLeft.toString()
                                                         }
 
                                                         override fun onFinish() {
                                                             set3secondsViewGone()
-                                                            measureCprScore(persons[0])
                                                             timerSec = 0
+                                                            timeFinished = true
                                                             calculateTime()
                                                         }
                                                     }.start()
                                             }
                                         }
                                     }
+                                }
+                                if (timeFinished) {
+                                    measureCprScore(persons[0])
                                 }
                             }
                         },
@@ -485,12 +495,6 @@ class PosePractice2Fragment :
             }
 
             pressCount = wristList.size
-
-            if (avgMinHeight == 0f && avgMaxHeight == 0f) {
-                avgMinHeight = wrist.y
-                avgMaxHeight = wrist.y
-            }
-
             // 손목의 높이가 상승 곡선에서 꼭짓점을 찍고 하강하는 경우
             if (increased && beforeWrist > wrist.y + 1) {
                 // 고점 이상값인지 검증
@@ -535,7 +539,7 @@ class PosePractice2Fragment :
 
     private fun getCprRateResult(): Double {
         pressCount = wristList.size
-        val minutes = 60.0 * 2.0
+        val minutes = 60.0
         // per sec 기준
         return pressCount / minutes
     }
@@ -555,40 +559,37 @@ class PosePractice2Fragment :
     }
 
     private fun calculateCompressionRate(): ResultMsg {
-        return when (wristList.size) {
-            in 190..250 -> ResultMsg(50, "adequate", "Good job! Very Adequate")
-            in 170 until 190 -> ResultMsg(35, "slow", "It's slow. Press more faster")
-            in 250 until 270 -> ResultMsg(35, "fast", "It's fast. Press more slower")
-            in 270..999999 -> ResultMsg(20, "tooFast", "It's too fast. Press slower")
-            in 100 until 170 -> ResultMsg(20, "tooSlow", "It's too slow. Press faster")
+        return when (pressCount / 2) {
+            in 100..130 -> ResultMsg(40, "adequate", "Good job! Very Adequate")
+            in 80 until 100 -> ResultMsg(25, "slow", "It's slow. Press more faster")
+            in 131 until 150 -> ResultMsg(25, "fast", "It's fast. Press more slower")
+            in 151..999999 -> ResultMsg(10, "tooFast", "It's too fast. Press slower")
+            in 0 until 80 -> ResultMsg(10, "tooSlow", "It's too slow. Press faster")
             else -> ResultMsg(0, "wrong", "Something went wrong. Try Again")
         }
     }
-
     // 팔 각도
     private fun calculateArmAngle(): ResultMsg {
         val total: Double = (correctAngle + incorrectAngle).toDouble()
         if (total < 100) return ResultMsg(0, "wrong", "Something went wrong.\nTry Again")
         return when (total) {
-            in total * 0.7..total -> ResultMsg(50, "adequate", "Good job! Very Nice angle!")
-            in total * 0.6..total * 0.7 -> ResultMsg(35, "almost", "Almost there. Try again")
+            in total * 0.7..total -> ResultMsg(40, "adequate", "Good job! Very Nice angle!")
+            in total * 0.6..total * 0.7 -> ResultMsg(25, "almost", "Almost there. Try again")
             in total * 0.5..total * 0.6 -> ResultMsg(
-                20,
+                10,
                 "notGood",
                 "Pay more attention to\nthe angle of your arms",
             )
-
-            else -> ResultMsg(5, "bad", "You need some more practice")
+            else -> ResultMsg(0, "bad", "You need some more practice")
         }
     }
 
     // 압박 깊이
     private fun calculatePressDepth(): ResultMsg {
         return when (getCprDepthResult()) {
-            in 18.0..30.0 -> ResultMsg(50, "adequate", "Good job! Very adequate!")
-            in 5.0..18.0 -> ResultMsg(15, "shallow", "Press little deeper")
-            in 0.0..5.0 -> ResultMsg(5, "tooShallow", "It's too shallow. Press deeply")
-            in 30.0..100.0 -> ResultMsg(15, "deep", "Press slight")
+            in 18.0..30.0 -> ResultMsg(20, "adequate", "Good job! Very adequate!")
+            in 5.0..18.0 -> ResultMsg(10, "shallow", "Press little deeper")
+            in 30.0..100.0 -> ResultMsg(10, "deep", "Press slight")
             else -> ResultMsg(0, "wrong", "Something went wrong.\nTry Again")
         }
     }
@@ -666,7 +667,7 @@ class PosePractice2Fragment :
 
     override fun onStop() {
         super.onStop()
-//        ring.stop()
+        ring.stop()
     }
 }
 

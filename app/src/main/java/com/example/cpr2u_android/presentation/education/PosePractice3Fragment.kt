@@ -45,7 +45,8 @@ class PosePractice3Fragment :
 //
 //        binding.tvPercentNum.text = educationViewModel.postPracticeScore.toString()
 //
-        isPassed = educationViewModel.postPracticeScore > 80
+        Timber.d("SCORE >> ${educationViewModel.postPracticeScore}")
+        isPassed = educationViewModel.postPracticeScore >= 80
 
         viewPager = view.findViewById(R.id.viewPager)
         onboardingAdapter = OnboardingAdapter(this)
@@ -64,8 +65,8 @@ class PosePractice3Fragment :
                     null,
                     false,
                 )
-                binding.ivHeart.setImageResource(R.drawable.ic_certificate_big)
                 binding.ivHeart.visibility = View.VISIBLE
+                binding.ivHeartGray.visibility = View.VISIBLE
                 binding.tvTitle.text = "Congratulation!"
                 binding.tvSubtitle.text = "You have got CPR Angel Certificate!\nNow you're a CPR Angel and can help\nsomeone in cardiac arrest."
 
