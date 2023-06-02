@@ -84,9 +84,9 @@ class EducationViewModel(private val educationRepository: EducationRepository) :
         }
     }
 
-    fun postExercisesProgress() = viewModelScope.launch {
+    fun postExercisesProgress(score: Int) = viewModelScope.launch {
         kotlin.runCatching {
-            educationRepository.postExercisesProgress(80)
+            educationRepository.postExercisesProgress(score)
         }.onSuccess {
             Timber.d("post-exercises-success -> $it")
             _exercisesProgressUIState.emit(UiState.Success(true))
