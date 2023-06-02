@@ -243,6 +243,8 @@ class PosePractice2Fragment :
                                         set3secondsView()
                                         if (showView) {
                                             activity?.runOnUiThread {
+                                                ring = MediaPlayer.create(requireContext(), com.example.cpr2u_android.R.raw.cpr_posture_sound)
+                                                ring.start()
                                                 var timeLeft = 4
                                                 countDownTimer =
                                                     object : CountDownTimer(3000, 1000) {
@@ -666,7 +668,7 @@ class PosePractice2Fragment :
 
     override fun onStop() {
         super.onStop()
-//        ring.stop()
+        ring.stop()
     }
 }
 
