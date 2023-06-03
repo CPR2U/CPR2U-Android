@@ -12,7 +12,6 @@ import com.example.cpr2u_android.databinding.DialogSelectAddressBinding
 import com.example.cpr2u_android.databinding.FragmentEducationBinding
 import com.example.cpr2u_android.presentation.base.BaseFragment
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
-import timber.log.Timber
 
 class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragment_education) {
     private val educationViewModel: EducationViewModel by sharedViewModel()
@@ -41,6 +40,9 @@ class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragme
 
     private fun observeUserInfo() {
         educationViewModel.userInfo.observe(viewLifecycleOwner) {
+            if (it.nickname.isNotEmpty()) {
+                binding.tvNickname.text = it.nickname
+            }
             if (it.isLectureCompleted == 0) {
                 binding.done1 = false
             } else {
@@ -62,23 +64,6 @@ class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragme
                 binding.doing3 = false
                 binding.done3 = true
             }
-
-            if (it.angelStatus == 2 && CPR2USharedPreference.getLocation().isNullOrEmpty()) {
-                // 주소 피커 띄우기
-                val dialog = Dialog(requireContext())
-                val dialogBinding = DataBindingUtil.inflate<DialogSelectAddressBinding>(
-                    LayoutInflater.from(requireContext()),
-                    R.layout.dialog_select_address,
-                    null,
-                    false,
-                )
-                dialogBinding.npSido.apply {
-                    // TODO : 주소 max value, display value
-                    setOnValueChangedListener { picker, oldVal, newVal ->
-                    }
-                }
-            }
-
             when (it.angelStatus) {
                 0 -> {
                     binding.acquired = true
