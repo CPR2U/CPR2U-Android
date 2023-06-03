@@ -18,6 +18,10 @@ class CallRepositoryImpl(private val callDataSource: CallDataSource): CallReposi
         return callDataSource.postCallEnd(callId)
     }
 
+    override suspend fun getNumbersOfAngel(callId: Int): Int {
+        return callDataSource.getNumbersOfAngel(callId)
+    }
+
     override suspend fun getCallList(): ResponseCallList {
         return callDataSource.getCallList()
     }

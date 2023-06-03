@@ -20,6 +20,10 @@ class CallRemoteDataSource(private val callService: CallService) : CallDataSourc
         return callService.postCallEnd(callId)
     }
 
+    override suspend fun getNumbersOfAngel(callId: Int): Int {
+        return callService.getNumbersOfAngel(callId)
+    }
+
     override suspend fun getCallList(): ResponseCallList {
         return callService.getCallList()
     }

@@ -11,10 +11,10 @@ import com.example.cpr2u_android.data.model.response.call.ResponseDispatch
 interface CallRepository {
     suspend fun postCall(data: RequestCall): ResponseCall
     suspend fun postCallEnd(callId: Int): GeneralResponse
+    suspend fun getNumbersOfAngel(callId: Int): Int
     suspend fun getCallList(): ResponseCallList
     suspend fun postDispatch(callID: Int): ResponseDispatch
     suspend fun postDispatchArrive(dispatchId: Int): GeneralResponse
-
     suspend fun postDispatchReport(data: RequestDispatchReport): GeneralResponse
 
 }
