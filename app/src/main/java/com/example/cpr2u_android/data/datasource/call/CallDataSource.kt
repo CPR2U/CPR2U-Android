@@ -11,6 +11,7 @@ import com.example.cpr2u_android.data.model.response.call.ResponseDispatch
 interface CallDataSource {
     suspend fun postCall(data: RequestCall): ResponseCall
     suspend fun postCallEnd(callId: Int): GeneralResponse
+    suspend fun getNumbersOfAngel(callId: Int): Int
     suspend fun getCallList(): ResponseCallList
     suspend fun postDispatch(callId: Int): ResponseDispatch
     suspend fun postDispatchArrived(dispatchId: Int): GeneralResponse

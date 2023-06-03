@@ -24,6 +24,11 @@ interface CallService {
         @Path("call_id") call_id: Int,
     ): GeneralResponse
 
+    @GET("/call/{call_id}")
+    suspend fun getNumbersOfAngel(
+        @Path("call_id") call_id: Int,
+    ): Int
+
     @GET("/call")
     suspend fun getCallList(): ResponseCallList
 
