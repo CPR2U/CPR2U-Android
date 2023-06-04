@@ -77,7 +77,7 @@ class LectureActivity : BaseActivity<ActivityLectureBinding>(R.layout.activity_l
 
             dialog.show()
         }
-        handler.postDelayed(runnable, 30000L)
+        handler.postDelayed(runnable, 40 * 60 * 1000)
     }
 
     override fun onDestroy() {

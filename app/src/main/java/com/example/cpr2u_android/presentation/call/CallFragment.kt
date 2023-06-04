@@ -86,7 +86,7 @@ class CallFragment :
     private val handler: Handler = Handler()
     private lateinit var updater: Runnable
     var productInfoFragment: CallInfoBottomSheetDialog? = null
-    var isComplete = false
+    var isComplete = true
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreateView(
@@ -194,7 +194,13 @@ class CallFragment :
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
 
         // Check for permission to access location
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION,
+            ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.CAMERA,
+            ) == PackageManager.PERMISSION_GRANTED
         ) {
             // Get current location
             fusedLocationClient.lastLocation.addOnSuccessListener(
@@ -349,7 +355,7 @@ class CallFragment :
 
     private fun checkDistanceAndShowLog() {
         activity?.runOnUiThread {
-            callViewModel.isDispatch.observe(viewLifecycleOwner) {
+            callViewModel.dispatchSuccess.observe(viewLifecycleOwner) {
                 if (it) {
                     // TODO : 여기서 currentMarker 위도 경도 null exception 뜸
                     val distance = SphericalUtil.computeDistanceBetween(
@@ -359,48 +365,46 @@ class CallFragment :
                             currentMarker!!.position.longitude,
                         ),
                     )
-                    if (distance <= 70) { // 100m를 km로 변환하여 0.1로 설정
-                        if (!isComplete) {
-                            isComplete = true
-                            callViewModel.postDispatchArrive()
-                            productInfoFragment!!.dismiss()
-                            Timber.d("현재 위치와 마커의 위치가 70m 이하입니다.")
-                            val dialog = Dialog(requireContext())
-                            val binding = DataBindingUtil.inflate<DialogDispatchSuccessBinding>(
-                                LayoutInflater.from(requireContext()),
-                                R.layout.dialog_dispatch_success,
-                                null,
-                                false,
-                            )
-                            binding.buttonFinish.setOnClickListener {
-                                callViewModel.dispatchArriveSuccess.observe(viewLifecycleOwner) {
-                                    if (it) {
-                                        dialog.dismiss()
-                                    } else {
-                                        Timber.d("arrive server fail")
-                                    }
+                    if (distance <= 20 && isComplete) { // 100m를 km로 변환하여 0.1로 설정
+                        isComplete = false
+                        callViewModel.postDispatchArrive()
+                        productInfoFragment!!.dismiss()
+                        Timber.d("현재 위치와 마커의 위치가 20m 이하입니다.")
+                        val dialog = Dialog(requireContext())
+                        val binding = DataBindingUtil.inflate<DialogDispatchSuccessBinding>(
+                            LayoutInflater.from(requireContext()),
+                            R.layout.dialog_dispatch_success,
+                            null,
+                            false,
+                        )
+                        binding.buttonFinish.setOnClickListener {
+                            callViewModel.dispatchArriveSuccess.observe(viewLifecycleOwner) {
+                                if (it) {
+                                    dialog.dismiss()
+                                } else {
+                                    Timber.d("arrive server fail")
                                 }
                             }
-                            binding.tvReport.setOnClickListener {
-                                Timber.d("callViewmodel id -> ${callViewModel.dispatchId.value}")
-                                dialog.dismiss()
-                                val bundle = Bundle().apply {
-                                    putInt("dispatchId", callViewModel.dispatchId.value!!)
-                                }
-                                startActivity(
-                                    Intent(
-                                        requireContext(),
-                                        DispatchReportActivity::class.java,
-                                    ).putExtras(bundle),
-                                )
-                            }
-                            dialog.setContentView(binding.root)
-                            dialog.show()
-                            callViewModel.isDispatch.postValue(false)
                         }
-                    } else {
-                        Timber.d("아직 출동 안함")
+                        binding.tvReport.setOnClickListener {
+                            Timber.d("callViewmodel id -> ${callViewModel.dispatchId.value}")
+                            dialog.dismiss()
+                            val bundle = Bundle().apply {
+                                putInt("dispatchId", callViewModel.dispatchId.value!!)
+                            }
+                            startActivity(
+                                Intent(
+                                    requireContext(),
+                                    DispatchReportActivity::class.java,
+                                ).putExtras(bundle),
+                            )
+                        }
+                        dialog.setContentView(binding.root)
+                        dialog.show()
+                        callViewModel.isDispatch.postValue(false)
                     }
+                } else {
+                    Timber.d("아직 출동 안함")
                 }
             }
         }
