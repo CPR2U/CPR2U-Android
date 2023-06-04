@@ -83,8 +83,8 @@ class CallViewModel(private val callRepository: CallRepository) : ViewModel() {
         kotlin.runCatching {
             callRepository.getNumbersOfAngel(callId)
         }.onSuccess {
-            numberOfAngels.value = it
-            Timber.d("get-numbers-of-angel-success $it")
+            numberOfAngels.value = it.data.numberOfAngels
+            Timber.d("get-numbers-of-angel-success ${it.data.numberOfAngels}")
         }.onFailure {
             Timber.d("get-numbers-of-angel-fail $it")
         }

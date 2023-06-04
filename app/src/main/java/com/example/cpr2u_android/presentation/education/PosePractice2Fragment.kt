@@ -118,9 +118,6 @@ class PosePractice2Fragment :
         tvScore = view.findViewById(R.id.tvScore)
         surfaceView = view.findViewById(R.id.surfaceView)
         surfaceView.display
-        if (!isCameraPermissionGranted()) {
-            requestPermission()
-        }
         binding.ivCprGuidelines.visibility = View.VISIBLE
         binding.view3Seconds.visibility = View.VISIBLE
         binding.tvReady3Seconds.visibility = View.VISIBLE
@@ -171,7 +168,7 @@ class PosePractice2Fragment :
 
     override fun onStart() {
         super.onStart()
-        openCamera()
+        requestPermission()
     }
 
     override fun onResume() {
@@ -282,6 +279,8 @@ class PosePractice2Fragment :
                 }
             }
             createPoseEstimator()
+        } else {
+            requestPermission()
         }
     }
 

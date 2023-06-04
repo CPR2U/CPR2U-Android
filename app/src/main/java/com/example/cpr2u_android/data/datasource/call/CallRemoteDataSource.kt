@@ -4,10 +4,10 @@ import com.example.cpr2u_android.data.api.CallService
 import com.example.cpr2u_android.data.model.request.RequestDispatchReport
 import com.example.cpr2u_android.data.model.request.education.RequestCall
 import com.example.cpr2u_android.data.model.response.auth.GeneralResponse
-import com.example.cpr2u_android.data.model.response.call.ResponseAddress
 import com.example.cpr2u_android.data.model.response.call.ResponseCall
 import com.example.cpr2u_android.data.model.response.call.ResponseCallList
 import com.example.cpr2u_android.data.model.response.call.ResponseDispatch
+import com.example.cpr2u_android.data.model.response.call.ResponseNumbersOfAngel
 import timber.log.Timber
 
 class CallRemoteDataSource(private val callService: CallService) : CallDataSource {
@@ -20,7 +20,7 @@ class CallRemoteDataSource(private val callService: CallService) : CallDataSourc
         return callService.postCallEnd(callId)
     }
 
-    override suspend fun getNumbersOfAngel(callId: Int): Int {
+    override suspend fun getNumbersOfAngel(callId: Int): ResponseNumbersOfAngel {
         return callService.getNumbersOfAngel(callId)
     }
 

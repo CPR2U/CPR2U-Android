@@ -1,17 +1,13 @@
 package com.example.cpr2u_android.presentation.education
 
-import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import androidx.databinding.DataBindingUtil
 import com.example.cpr2u_android.R
-import com.example.cpr2u_android.data.sharedpref.CPR2USharedPreference
-import com.example.cpr2u_android.databinding.DialogSelectAddressBinding
 import com.example.cpr2u_android.databinding.FragmentEducationBinding
 import com.example.cpr2u_android.presentation.base.BaseFragment
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import timber.log.Timber
 
 class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragment_education) {
     private val educationViewModel: EducationViewModel by sharedViewModel()
@@ -40,9 +36,7 @@ class EducationFragment : BaseFragment<FragmentEducationBinding>(R.layout.fragme
 
     private fun observeUserInfo() {
         educationViewModel.userInfo.observe(viewLifecycleOwner) {
-            if (it.nickname.isNotEmpty()) {
-                binding.tvNickname.text = it.nickname
-            }
+            binding.tvNickname.text = it.nickname
             if (it.isLectureCompleted == 0) {
                 binding.done1 = false
             } else {

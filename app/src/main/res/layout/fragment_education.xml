@@ -467,7 +467,7 @@
                         android:layout_marginStart="21dp"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/notosans_bold"
-                        android:text="Posture_Practice"
+                        android:text="Posture Practice"
                         android:textColor="@{doing3? @color/white : done3 ? @color/black : @color/education_gray}"
                         android:textSize="18sp"
                         app:layout_constraintStart_toStartOf="parent"
