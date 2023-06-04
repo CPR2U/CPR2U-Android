@@ -34,7 +34,7 @@
                 android:paddingStart="16dp"
                 android:paddingTop="2dp"
                 android:paddingBottom="7dp"
-                android:text="Education"
+                android:text="Profile"
                 android:textColor="@color/main_red"
                 android:textSize="34sp"
                 app:layout_constraintTop_toTopOf="parent" />
