@@ -194,10 +194,7 @@ class CallFragment :
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
 
         // Check for permission to access location
-        if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION,
-            ) == PackageManager.PERMISSION_GRANTED
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
         ) {
             // Get current location
             fusedLocationClient.lastLocation.addOnSuccessListener(
@@ -259,7 +256,7 @@ class CallFragment :
             // Request permission to access location
             ActivityCompat.requestPermissions(
                 requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.CAMERA),
                 LOCATION_PERMISSION_REQUEST_CODE,
             )
         }
@@ -354,6 +351,7 @@ class CallFragment :
         activity?.runOnUiThread {
             callViewModel.isDispatch.observe(viewLifecycleOwner) {
                 if (it) {
+                    // TODO : 여기서 currentMarker 위도 경도 null exception 뜸
                     val distance = SphericalUtil.computeDistanceBetween(
                         LatLng(latitude, longitude),
                         LatLng(
